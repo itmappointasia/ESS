@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ESS – Room Booking (Test)</title>
+  <title>Room Booking Test (GitHub Pages → Apps Script JSONP)</title>
   <style>
     body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; padding:16px; line-height:1.4}
     label{display:inline-block; min-width:140px}
-    input,select{padding:6px 8px; min-width:340px}
+    input,select{padding:6px 8px; min-width:360px}
     button{padding:8px 12px; cursor:pointer; margin-right:8px}
-    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto; min-height:180px; white-space:pre-wrap}
+    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto; min-height:120px}
     .row{margin:10px 0}
     .hint{color:#555; font-size:12px}
   </style>
@@ -34,19 +34,19 @@
 
   <div class="row">
     <label>Start (ISO):</label>
-    <input id="start" placeholder="2026-02-12T08:00:00+07:00" />
+    <input id="start" value="2026-02-12T08:00:00+07:00" />
     <div class="hint">ตัวอย่าง: 2026-02-12T08:00:00+07:00</div>
   </div>
 
   <div class="row">
     <label>End (ISO):</label>
-    <input id="end" placeholder="2026-02-12T09:00:00+07:00" />
+    <input id="end" value="2026-02-12T09:00:00+07:00" />
     <div class="hint">ต้องมากกว่า Start</div>
   </div>
 
   <div class="row">
     <label>Attendees (comma):</label>
-    <input id="att" placeholder="ice.jirapon@gmail.com" />
+    <input id="att" value="ice.jirapon@gmail.com" />
   </div>
 
   <div class="row">
@@ -58,22 +58,24 @@
   <pre id="out"></pre>
 
 <script>
-  // ✅ ใส่ URL /exec ของคุณ
+  // ✅ ต้องเป็น /exec
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
   const API_KEY = "ESS-ROOM-2026";
 
   const outEl = document.getElementById("out");
-  const reset = () => outEl.textContent = "";
-  const log = (m) => outEl.textContent += m + "\n";
+  const log = (m) => { outEl.textContent += m + "\n"; };
+  const reset = () => { outEl.textContent = ""; };
 
   function jsonpCall(params){
     reset();
 
+    // สร้าง callback ชื่อปลอดภัย
     const cb = "cb_" + Math.random().toString(36).slice(2);
     params.callback = cb;
 
+    // timeout กันเงียบ
     const timer = setTimeout(() => {
-      log("TIMEOUT: ไม่มี callback กลับมา");
+      log("TIMEOUT: ไม่มี callback กลับมา (เช็ค Deploy/Permission/URL)");
       cleanup();
     }, 12000);
 
@@ -86,7 +88,9 @@
       log("CALLBACK HIT:");
       log(JSON.stringify(res, null, 2));
       cleanup();
-      alert(res && res.ok ? "OK" : "FAIL");
+
+      if (res && res.ok) alert("OK");
+      else alert("FAIL: " + (res && res.error ? res.error : "unknown"));
     };
 
     const qs = new URLSearchParams();
@@ -95,6 +99,7 @@
       qs.set(k, String(v));
     });
 
+    // ✅ แสดง REQUEST ชัดๆ
     const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
     log("REQUEST:");
     log(url);
@@ -102,17 +107,18 @@
     const s = document.createElement("script");
     s.src = url;
     s.onerror = () => {
-      log("SCRIPT ERROR: โหลดไม่สำเร็จ (URL ผิด/Deploy/Permission)");
+      log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404/permission/deploy)");
       cleanup();
       alert("SCRIPT ERROR");
     };
     document.body.appendChild(s);
   }
 
-  document.getElementById("clear").onclick = reset;
-
   document.getElementById("ping").onclick = () => {
-    jsonpCall({ action:"ping", apiKey:API_KEY });
+    jsonpCall({
+      action: "ping",              // ✅ ต้องเป็น ping
+      apiKey: API_KEY
+    });
   };
 
   document.getElementById("book").onclick = () => {
@@ -129,9 +135,8 @@
       return;
     }
 
-    // ✅ action ต้องเป็น createmeeting (ตัวเล็ก/ใหญ่ได้ เพราะฝั่ง backend toLowerCase)
     jsonpCall({
-      action: "createmeeting",
+      action: "createmeeting",     // ✅ สำคัญ: ต้องเป็น createmeeting (ตัวเล็กติดกัน)
       apiKey: API_KEY,
       roomKey,
       title,
@@ -141,6 +146,8 @@
       description: "Created from GitHub Pages"
     });
   };
+
+  document.getElementById("clear").onclick = () => reset();
 </script>
 </body>
 </html>
