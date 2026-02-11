@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ESS – Ping Test</title>
+</head>
+<body>
+
+<button onclick="pingBackend()">Ping Backend</button>
+
 <script>
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
 const API_KEY = "ESS-ROOM-2026";
@@ -6,7 +16,7 @@ function pingBackend(){
   const cb = "cb_" + Math.random().toString(36).slice(2);
 
   window[cb] = (res) => {
-    console.log("CALLBACK HIT:", res);   // 👈 เพิ่มบรรทัดนี้
+    console.log("CALLBACK HIT:", res);
     alert("PING OK: " + JSON.stringify(res));
     delete window[cb];
   };
@@ -17,4 +27,5 @@ function pingBackend(){
 }
 </script>
 
-<button onclick="pingBackend()">Ping Backend</button>
+</body>
+</html>
