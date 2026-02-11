@@ -24,13 +24,13 @@
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
       background:var(--bg); color:var(--ink); line-height:1.4;
     }
-    .wrap{max-width:920px; margin:0 auto}
+    .wrap{max-width:980px; margin:0 auto}
     .top{
       display:flex; align-items:flex-start; justify-content:space-between;
       gap:12px; margin-bottom:14px;
     }
     h2{margin:0; font-size:18px}
-    .sub{color:var(--muted); font-size:13px}
+    .sub{color:var(--muted); font-size:13px; margin-top:4px}
     .card{
       background:var(--card); border:1px solid var(--line);
       border-radius:var(--r); box-shadow:var(--shadow);
@@ -98,15 +98,89 @@
       min-height:140px;
       border:1px solid rgba(255,255,255,.08);
     }
-    .err{color:var(--danger); font-weight:650}
+    .metaBox{
+      margin-top:8px;
+      padding:10px 12px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      background:#fbfcff;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .metaLeft{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line); background:#fff;
+      font-size:12px; color:var(--ink);
+    }
+    .pill strong{font-size:12px}
+    .pill.muted{color:var(--muted)}
+    .pill.bad{border-color:rgba(220,38,38,.35); background:rgba(220,38,38,.04)}
+    .pill.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.05)}
+
+    /* Attendees chips */
+    .chips{
+      display:flex; flex-wrap:wrap; gap:8px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      min-height:44px;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f7f9ff;
+      font-size:12px;
+    }
+    .chip .x{
+      width:18px; height:18px; border-radius:999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid var(--line);
+      cursor:pointer;
+      user-select:none;
+      background:#fff;
+    }
+    .chip .x:hover{border-color:rgba(220,38,38,.5); color:var(--danger)}
+
+    /* autocomplete dropdown */
+    .acWrap{position:relative}
+    .acList{
+      position:absolute; left:0; right:0; top:calc(100% + 6px);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      max-height:260px;
+      overflow:auto;
+      z-index:20;
+      display:none;
+    }
+    .acItem{
+      padding:10px 10px;
+      cursor:pointer;
+      border-bottom:1px solid rgba(219,227,243,.6);
+    }
+    .acItem:last-child{border-bottom:0}
+    .acItem:hover{background:#f3f6ff}
+    .acName{font-weight:650; font-size:13px}
+    .acMeta{font-size:12px; color:var(--muted)}
+    .smallRow{display:flex; gap:10px; align-items:center}
+    .smallRow .btn{padding:10px 12px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <h2>ESS (Employee Self Service</h2>
-        <div class="sub">UI ใช้งานจริง: เลือกวันที่/เวลา → แปลงเป็น ISO +07:00 → ยิงไป Code.gs เพื่อบันทึกลง Google Sheet</div>
+        <h2>ESS (Employee Self Service)</h2>
+        <div class="sub">ดึงข้อมูลพนักงานจาก Google Sheet (ชื่อ/แผนก) ผ่าน Code.gs แล้วใช้กับผู้จอง + ผู้เข้าร่วมประชุม</div>
       </div>
       <div class="badge" id="statusBadge">
         <span class="dot no" id="statusDot"></span>
@@ -128,14 +202,22 @@
 
         <div>
           <label>Booker Email (ผู้จอง)</label>
-          <input id="bookerEmail" value="ice.jirapon@gmail.com" />
-          <div class="hint">ระบบจะ lookup ชื่อ/แผนกจากชีต “ข้อมูลพนักงาน” ด้วยอีเมลนี้</div>
+          <input id="bookerEmail" value="ice.jirapon@gmail.com" autocomplete="off" />
+          <div class="hint">จะ lookup ชื่อ/แผนกจากชีต “ข้อมูลพนักงาน”</div>
+
+          <div class="metaBox">
+            <div class="metaLeft">
+              <span class="pill muted" id="bkName">ชื่อ: -</span>
+              <span class="pill muted" id="bkDept">แผนก: -</span>
+            </div>
+            <span class="pill muted" id="bkStatus">สถานะ: ยังไม่ lookup</span>
+          </div>
         </div>
 
         <div>
           <label>Book Date</label>
           <input id="date" type="date" />
-          <div class="hint">วัน/เดือน/ปี (จะถูกแปลงเป็น ISO +07:00 ให้อัตโนมัติ)</div>
+          <div class="hint">วัน/เดือน/ปี (แปลงเป็น ISO +07:00 อัตโนมัติ)</div>
         </div>
 
         <div>
@@ -155,10 +237,22 @@
           <div class="hint">ค่าเริ่มต้น: 17:30</div>
         </div>
 
+        <!-- Attendees from employee sheet -->
         <div style="grid-column:1/-1">
-          <label>Attendees (comma)</label>
-          <input id="att" value="ice.jirapon@gmail.com" />
-          <div class="hint">สมาชิกที่เข้าร่วมการประชุม (คั่นด้วย comma)</div>
+          <label>ผู้เข้าร่วมประชุม (ค้นหาจาก “ข้อมูลพนักงาน”)</label>
+
+          <div class="smallRow">
+            <div class="acWrap" style="flex:1">
+              <input id="empSearch" placeholder="พิมพ์ชื่อ / แผนก / อีเมล เพื่อค้นหา แล้วคลิกเลือก" autocomplete="off" />
+              <div class="acList" id="acList"></div>
+            </div>
+            <button class="btn ghost" id="addSelected" type="button">เพิ่ม</button>
+            <button class="btn ghost" id="clearAtt" type="button">ล้างผู้เข้าร่วม</button>
+          </div>
+
+          <div class="hint">ผู้เข้าร่วมจะถูกส่งเป็นรายการอีเมล (comma) ไปยัง Code.gs เพื่อบันทึกลงชีต Bookings</div>
+
+          <div class="chips" id="chips"></div>
         </div>
 
         <div style="grid-column:1/-1">
@@ -168,9 +262,9 @@
       </div>
 
       <div class="row">
-        <button class="btn ghost" id="ping">Ping Backend</button>
-        <button class="btn" id="book">บันทึกการจอง</button>
-        <button class="btn danger" id="clear">Clear Log</button>
+        <button class="btn ghost" id="ping" type="button">Ping Backend</button>
+        <button class="btn" id="book" type="button">บันทึกการจอง</button>
+        <button class="btn danger" id="clearLog" type="button">Clear Log</button>
       </div>
 
       <pre id="out"></pre>
@@ -194,14 +288,53 @@
     statusText.textContent = text;
   }
 
-  // ---------- Time options ----------
   function pad(n){ return String(n).padStart(2,"0"); }
+
+  // ---------- JSONP core ----------
+  function jsonpCall(params, onDone){
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    params.callback = cb;
+
+    const timer = setTimeout(() => {
+      onDone && onDone({ ok:false, error:"TIMEOUT" });
+      cleanup();
+      setStatus(false, "Timeout");
+    }, 12000);
+
+    function cleanup(){
+      clearTimeout(timer);
+      try { delete window[cb]; } catch(_){}
+    }
+
+    window[cb] = (res) => {
+      cleanup();
+      onDone && onDone(res);
+    };
+
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v]) => {
+      if (v === undefined || v === null) return;
+      qs.set(k, String(v));
+    });
+
+    const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
+
+    const s = document.createElement("script");
+    s.src = url;
+    s.onerror = () => {
+      cleanup();
+      onDone && onDone({ ok:false, error:"SCRIPT_ERROR" });
+      setStatus(false, "Script error");
+    };
+    document.body.appendChild(s);
+  }
+
+  // ---------- Time options ----------
   function buildTimeOptions(start="08:30", end="17:30", stepMin=30){
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
     let t = sh*60 + sm;
     const tEnd = eh*60 + em;
-
     const list = [];
     while (t <= tEnd){
       const hh = Math.floor(t/60);
@@ -229,94 +362,216 @@
   fillSelect(startSel, timeOptions, "08:30");
   fillSelect(endSel, timeOptions, "17:30");
 
-  // Default date = tomorrow (ตามเวลาประเทศไทย)
+  // Default date = tomorrow
   (function initDate(){
     const d = new Date();
     d.setDate(d.getDate() + 1);
-    const yyyy = d.getFullYear();
-    const mm = pad(d.getMonth()+1);
-    const dd = pad(d.getDate());
-    document.getElementById("date").value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById("date").value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   })();
 
   // ---------- Utilities ----------
   function isValidEmail(s){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||"").trim());
   }
-
   function makeISO(dateYYYYMMDD, hhmm){
-    // dateYYYYMMDD: "2026-02-12"
-    // hhmm: "08:30"
     const [y,m,d] = dateYYYYMMDD.split("-").map(Number);
     const [hh,mm] = hhmm.split(":").map(Number);
-    // สร้าง string ISO แบบชัดเจน +07:00
     return `${pad(y)}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00${TZ_OFFSET}`;
   }
-
   function isPastBangkok(iso){
-    // เปรียบเทียบโดยแปลงเป็น Date (JS เข้าใจ offset)
-    const t = new Date(iso).getTime();
-    return t <= Date.now();
+    return new Date(iso).getTime() <= Date.now();
   }
 
-  function jsonpCall(params){
-    resetLog();
+  // ---------- Booker lookup UI ----------
+  const bkNameEl = document.getElementById("bkName");
+  const bkDeptEl = document.getElementById("bkDept");
+  const bkStatusEl = document.getElementById("bkStatus");
+  function setBookerMeta(state, name, dept){
+    // state: "idle" | "loading" | "found" | "notfound" | "bad"
+    const map = {
+      idle:   { cls:"pill muted", text:"สถานะ: ยังไม่ lookup" },
+      loading:{ cls:"pill muted", text:"สถานะ: กำลังค้นหา..." },
+      found:  { cls:"pill ok",    text:"สถานะ: พบในระบบ" },
+      notfound:{cls:"pill bad",   text:"สถานะ: ไม่พบในระบบ" },
+      bad:    { cls:"pill bad",   text:"สถานะ: อีเมลไม่ถูกต้อง" }
+    };
+    const m = map[state] || map.idle;
+    bkStatusEl.className = m.cls;
+    bkStatusEl.textContent = m.text;
 
-    const cb = "cb_" + Math.random().toString(36).slice(2);
-    params.callback = cb;
+    bkNameEl.className = name ? "pill" : "pill muted";
+    bkDeptEl.className = dept ? "pill" : "pill muted";
+    bkNameEl.textContent = "ชื่อ: " + (name || "-");
+    bkDeptEl.textContent = "แผนก: " + (dept || "-");
+  }
 
-    const timer = setTimeout(() => {
-      log("TIMEOUT: ไม่มี callback กลับมา (เช็ค Deploy/Permission/URL)");
-      cleanup();
-      setStatus(false, "Timeout");
-    }, 12000);
+  function lookupBooker(email){
+    const e = String(email||"").trim().toLowerCase();
+    if (!e) { setBookerMeta("idle","",""); return; }
+    if (!isValidEmail(e)) { setBookerMeta("bad","",""); return; }
 
-    function cleanup(){
-      clearTimeout(timer);
-      try { delete window[cb]; } catch(_){}
+    setBookerMeta("loading","","");
+    jsonpCall({ action:"employee", apiKey:API_KEY, email:e }, (res) => {
+      if (!res || !res.ok){
+        setBookerMeta("notfound","","");
+        return;
+      }
+      if (res.found && res.employee){
+        setBookerMeta("found", res.employee.name || "-", res.employee.department || "-");
+      } else {
+        setBookerMeta("notfound","","");
+      }
+    });
+  }
+
+  const bookerInput = document.getElementById("bookerEmail");
+  bookerInput.addEventListener("blur", () => lookupBooker(bookerInput.value));
+  // init lookup
+  lookupBooker(bookerInput.value);
+
+  // ---------- Employees list (for attendees) ----------
+  let EMP = [];               // [{email,name,department}]
+  let selectedEmp = null;     // currently highlighted from autocomplete
+  const acList = document.getElementById("acList");
+  const empSearch = document.getElementById("empSearch");
+
+  function openList(){ acList.style.display = "block"; }
+  function closeList(){ acList.style.display = "none"; selectedEmp = null; }
+
+  function renderList(items){
+    if (!items.length){ closeList(); return; }
+    acList.innerHTML = "";
+    items.forEach(emp => {
+      const div = document.createElement("div");
+      div.className = "acItem";
+      div.innerHTML = `
+        <div class="acName">${escapeHtml(emp.name || emp.email)}</div>
+        <div class="acMeta">${escapeHtml(emp.department || "-")} • ${escapeHtml(emp.email)}</div>
+      `;
+      div.addEventListener("click", () => {
+        selectedEmp = emp;
+        empSearch.value = emp.email;
+        closeList();
+      });
+      acList.appendChild(div);
+    });
+    openList();
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  function filterEmployees(q){
+    const t = String(q||"").trim().toLowerCase();
+    if (!t) return [];
+    // จำกัดผลลัพธ์แสดง 30 รายการ
+    const out = [];
+    for (const e of EMP){
+      if (out.length >= 30) break;
+      const hay = `${e.name||""} ${e.department||""} ${e.email||""}`.toLowerCase();
+      if (hay.includes(t)) out.push(e);
+    }
+    return out;
+  }
+
+  empSearch.addEventListener("input", () => {
+    const items = filterEmployees(empSearch.value);
+    renderList(items);
+    // ถ้าพิมพ์เป็น email ตรงๆ ให้เตรียม selectedEmp ถ้าตรงกับคนใน list
+    const v = empSearch.value.trim().toLowerCase();
+    selectedEmp = EMP.find(x => x.email === v) || null;
+  });
+
+  document.addEventListener("click", (ev) => {
+    if (!acList.contains(ev.target) && ev.target !== empSearch) closeList();
+  });
+
+  // ---------- Attendees chips ----------
+  const chipsEl = document.getElementById("chips");
+  const attendeesSet = new Map(); // email -> {email,name,department}
+
+  function renderChips(){
+    chipsEl.innerHTML = "";
+    if (attendeesSet.size === 0){
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "ยังไม่มีผู้เข้าร่วม";
+      chipsEl.appendChild(empty);
+      return;
     }
 
-    window[cb] = (res) => {
-      log("CALLBACK HIT:");
-      log(JSON.stringify(res, null, 2));
-      cleanup();
+    for (const [email, emp] of attendeesSet.entries()){
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML = `
+        <span><strong>${escapeHtml(emp.name || email)}</strong> — ${escapeHtml(emp.department || "-")}</span>
+        <span class="hint">${escapeHtml(email)}</span>
+        <span class="x" title="ลบ">×</span>
+      `;
+      chip.querySelector(".x").addEventListener("click", () => {
+        attendeesSet.delete(email);
+        renderChips();
+      });
+      chipsEl.appendChild(chip);
+    }
+  }
 
-      if (res && res.ok){
-        alert("OK");
-        setStatus(true, "Connected");
+  function addAttendeeByEmail(email){
+    const e = String(email||"").trim().toLowerCase();
+    if (!e) return;
+    if (!isValidEmail(e)) { alert("อีเมลผู้เข้าร่วมไม่ถูกต้อง"); return; }
+    if (attendeesSet.has(e)) return;
+
+    const found = EMP.find(x => x.email === e);
+    attendeesSet.set(e, found || { email:e, name:e, department:"" });
+    renderChips();
+  }
+
+  document.getElementById("addSelected").addEventListener("click", () => {
+    const v = empSearch.value.trim().toLowerCase();
+    if (selectedEmp) addAttendeeByEmail(selectedEmp.email);
+    else addAttendeeByEmail(v);
+    empSearch.value = "";
+    selectedEmp = null;
+    closeList();
+  });
+
+  document.getElementById("clearAtt").addEventListener("click", () => {
+    attendeesSet.clear();
+    renderChips();
+  });
+
+  // โหลด employees จาก backend
+  function loadEmployees(){
+    jsonpCall({ action:"employees", apiKey:API_KEY }, (res) => {
+      if (res && res.ok && Array.isArray(res.employees)){
+        EMP = res.employees;
+        setStatus(true, `Loaded employees (${EMP.length})`);
       } else {
-        alert("FAIL: " + (res && res.error ? res.error : "unknown"));
-        setStatus(false, "Error");
+        setStatus(false, "Employees load failed");
       }
-    };
-
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k,v]) => {
-      if (v === undefined || v === null) return;
-      qs.set(k, String(v));
     });
-
-    const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
-    log("REQUEST:");
-    log(url);
-
-    const s = document.createElement("script");
-    s.src = url;
-    s.onerror = () => {
-      log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404/permission/deploy)");
-      cleanup();
-      alert("SCRIPT ERROR");
-      setStatus(false, "Script error");
-    };
-    document.body.appendChild(s);
   }
 
   // ---------- Actions ----------
   document.getElementById("ping").onclick = () => {
-    jsonpCall({ action:"ping", apiKey:API_KEY });
+    resetLog();
+    jsonpCall({ action:"ping", apiKey:API_KEY }, (res) => {
+      log("PING RESPONSE:");
+      log(JSON.stringify(res, null, 2));
+      if (res && res.ok) setStatus(true, "Connected");
+      else setStatus(false, "Ping failed");
+    });
   };
 
+  document.getElementById("clearLog").onclick = () => resetLog();
+
   document.getElementById("book").onclick = () => {
+    resetLog();
+
     const roomKey = document.getElementById("room").value;
     const title = document.getElementById("title").value.trim();
     const date = document.getElementById("date").value;
@@ -324,39 +579,32 @@
     const endTime = endSel.value;
 
     const bookerEmail = document.getElementById("bookerEmail").value.trim().toLowerCase();
-    const attendees = document.getElementById("att").value.trim();
     const description = document.getElementById("desc").value.trim();
 
+    // attendees: join emails
+    const attendees = Array.from(attendeesSet.keys()).join(", ");
+
     // Validate
-    if (!date){
-      resetLog(); log("ERROR: กรุณาเลือก Book Date"); alert("เลือกวันที่ก่อน"); return;
-    }
-    if (!title){
-      resetLog(); log("ERROR: กรุณาใส่หัวข้อการประชุม"); alert("ใส่หัวข้อก่อน"); return;
-    }
-    if (!isValidEmail(bookerEmail)){
-      resetLog(); log("ERROR: Booker Email ไม่ถูกต้อง"); alert("อีเมลผู้จองไม่ถูกต้อง"); return;
-    }
+    if (!date){ log("ERROR: กรุณาเลือก Book Date"); alert("เลือกวันที่ก่อน"); return; }
+    if (!title){ log("ERROR: กรุณาใส่หัวข้อการประชุม"); alert("ใส่หัวข้อก่อน"); return; }
+    if (!isValidEmail(bookerEmail)){ log("ERROR: Booker Email ไม่ถูกต้อง"); alert("อีเมลผู้จองไม่ถูกต้อง"); return; }
 
     const startISO = makeISO(date, startTime);
     const endISO   = makeISO(date, endTime);
 
     if (new Date(endISO).getTime() <= new Date(startISO).getTime()){
-      resetLog();
       log("ERROR: End ต้องมากกว่า Start");
-      log(`StartISO=${startISO}`);
-      log(`EndISO=${endISO}`);
       alert("End ต้องมากกว่า Start");
       return;
     }
-
     if (isPastBangkok(startISO)){
-      resetLog();
       log("ERROR: ห้ามจองเวลาที่ผ่านมาแล้ว");
-      log(`StartISO=${startISO}`);
       alert("ห้ามจองเวลาที่ผ่านมาแล้ว");
       return;
     }
+
+    // ถ้าไม่ได้เลือก attendees เลย ให้ใส่ผู้จองเป็น attendees อย่างน้อย 1 คน (optional)
+    const finalAttendees = attendees || bookerEmail;
 
     jsonpCall({
       action: "createmeeting",
@@ -365,13 +613,26 @@
       title,
       start: startISO,
       end: endISO,
-      attendees,
+      attendees: finalAttendees,
       description,
-      bookerEmail // ✅ ส่งแยกให้ Code.gs
+      bookerEmail
+    }, (res) => {
+      log("BOOK RESPONSE:");
+      log(JSON.stringify(res, null, 2));
+
+      if (res && res.ok){
+        alert("บันทึกสำเร็จ");
+        setStatus(true, "Saved");
+      } else {
+        alert("บันทึกล้มเหลว: " + (res && res.error ? res.error : "unknown"));
+        setStatus(false, "Save failed");
+      }
     });
   };
 
-  document.getElementById("clear").onclick = () => resetLog();
+  // init
+  renderChips();
+  loadEmployees();
 </script>
 </body>
 </html>
