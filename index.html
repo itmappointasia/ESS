@@ -15,6 +15,7 @@
       --primary:#3b82f6;
       --primary2:#2563eb;
       --danger:#ef4444;
+      --warn:#f59e0b;
       --ok:#22c55e;
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --r:18px;
@@ -23,9 +24,10 @@
     body{
       margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      background:radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,.18), transparent 60%),
-                 radial-gradient(900px 500px at 85% 20%, rgba(34,197,94,.10), transparent 55%),
-                 var(--bg);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,.18), transparent 60%),
+        radial-gradient(900px 500px at 85% 20%, rgba(34,197,94,.10), transparent 55%),
+        var(--bg);
       color:var(--ink);
     }
     .wrap{max-width:1200px;margin:0 auto;padding:22px}
@@ -50,42 +52,188 @@
       grid-template-columns:repeat(4,1fr);
       gap:14px;
       margin-top:14px;
+      align-items:stretch;
     }
     @media (max-width: 1100px){ .rooms{grid-template-columns:repeat(2,1fr)} }
     @media (max-width: 560px){ .rooms{grid-template-columns:1fr} .wrap{padding:14px} }
 
+    /* ====== NEW: “Room Status” display card ====== */
     .roomCard{
       border:1px solid var(--line);
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(59,130,246,.10), rgba(255,255,255,.02));
+      border-radius:24px;
       box-shadow:var(--shadow);
-      padding:16px;
       cursor:pointer;
       position:relative;
       overflow:hidden;
-      min-height:160px;
-    }
-    .roomCard:before{
-      content:"";
-      position:absolute;inset:-80px -80px auto auto;
-      width:220px;height:220px;border-radius:50%;
-      background:radial-gradient(circle at 30% 30%, rgba(59,130,246,.35), transparent 55%);
-      filter:blur(0px);
-      pointer-events:none;
-    }
-    .roomHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .roomName{font-size:16px;font-weight:800;letter-spacing:.2px}
-    .roomKey{color:var(--muted);font-size:12px}
-    .roomHint{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}
-    .roomBtn{
-      margin-top:14px;
-      display:inline-flex;align-items:center;gap:8px;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      font-weight:750;font-size:13px;
+      background:
+        radial-gradient(700px 320px at 25% 15%, rgba(255,255,255,.10), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
+      min-height:360px;
+      display:flex;
+      flex-direction:column;
+      isolation:isolate;
     }
     .roomCard:hover{transform:translateY(-2px);transition:.18s ease}
+
+    /* Accent edge like kiosk */
+    .roomCard::before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.06);
+      pointer-events:none;
+      z-index:1;
+    }
+    .roomCard::after{
+      content:"";
+      position:absolute; inset:-120px -120px auto auto;
+      width:320px; height:320px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), .35), transparent 58%);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* Tall “screen” feeling */
+    .screen{
+      position:relative;
+      z-index:2;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      height:100%;
+    }
+
+    /* Status bar like sample */
+    .statusBar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.28);
+      backdrop-filter: blur(6px);
+    }
+    .statusLeft{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .statusLabel{
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .statusDot{
+      width:10px; height:10px; border-radius:50%;
+      background:rgba(var(--accent-rgb), .95);
+      box-shadow:0 0 0 6px rgba(var(--accent-rgb), .16);
+      flex:0 0 auto;
+    }
+    .statusMeta{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .roomChip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.90);
+      font-size:12px;
+      font-weight:850;
+      flex:0 0 auto;
+    }
+
+    /* Stone image block */
+    .stoneBox{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(600px 260px at 30% 10%, rgba(var(--accent-rgb), .20), transparent 55%),
+        rgba(0,0,0,.30);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      min-height:190px;
+    }
+    .stoneImg{
+      width:100%;
+      height:190px;
+      object-fit:cover;
+      border-radius:14px;
+      filter:saturate(1.05) contrast(1.02);
+    }
+
+    /* Details area like kiosk */
+    .info{
+      margin-top:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.26);
+      padding:12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .roomName{
+      font-size:16px;
+      font-weight:950;
+      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-width:0;
+    }
+    .roomName span{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .roomDesc{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .ctaRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:4px;
+    }
+    .ctaBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(var(--accent-rgb), .12);
+      color:#fff;
+      font-weight:950;
+      font-size:13px;
+      width:100%;
+    }
+    .ctaBtn:hover{background:rgba(var(--accent-rgb), .18)}
+
+    .hint{color:var(--muted);font-size:12px;margin-top:6px}
 
     /* Modal */
     .modalOverlay{
@@ -158,10 +306,7 @@
       border:1px solid var(--line);
       color:var(--ink);
     }
-    .btn.danger{
-      background:var(--danger);
-    }
-    .hint{color:var(--muted);font-size:12px;margin-top:6px}
+    .btn.danger{ background:var(--danger); }
 
     /* Booking list */
     .list{
@@ -449,12 +594,12 @@
 
   // ====== STATE ======
   const state = {
-    employees: [],         // [{email,name,department,nickname,position}]
-    departments: [],       // ["Sales", ...]
-    roomKey: null,         // selected room key
+    employees: [],
+    departments: [],
+    roomKey: null,
     roomName: null,
-    roomDate: null,        // YYYY-MM-DD
-    roomBookings: [],      // [{start,end,dept,booker,title}]
+    roomDate: null,
+    roomBookings: [],
     booking: {
       roomKey: "",
       date: "",
@@ -465,7 +610,7 @@
       email: "",
       title: "",
       desc: "",
-      members: new Map()  // email -> {email,name,department}
+      members: new Map()
     }
   };
 
@@ -518,15 +663,9 @@
     statusDot.className = "dot " + (ok ? "ok" : "no");
     statusText.textContent = text;
   }
-  function log(msg){
-    logEl.textContent += msg + "\n";
-  }
-  function clearLog(){
-    logEl.textContent = "";
-  }
-  function clearBkLog(){
-    bkLog.textContent = "";
-  }
+  function log(msg){ logEl.textContent += msg + "\n"; }
+  function clearLog(){ logEl.textContent = ""; }
+  function clearBkLog(){ bkLog.textContent = ""; }
   function escapeHtml(s){
     return String(s||"").replace(/[&<>"']/g, m => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -540,9 +679,7 @@
     const [hh,mm] = hhmm.split(":").map(Number);
     return `${pad(y)}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00${TZ_OFFSET}`;
   }
-  function isPast(iso){
-    return new Date(iso).getTime() <= Date.now();
-  }
+  function isPast(iso){ return new Date(iso).getTime() <= Date.now(); }
 
   function buildTimeOptions(start="08:30", end="17:30", stepMin=30){
     const [sh, sm] = start.split(":").map(Number);
@@ -617,7 +754,6 @@
     });
   }
   function apiBookings(roomKey, dateYYYYMMDD){
-    // ต้องมีใน Code.gs: action=bookings&roomKey=...&date=YYYY-MM-DD
     return new Promise((resolve) => {
       jsonpCall({ action:"bookings", apiKey:API_KEY, roomKey, date: dateYYYYMMDD }, resolve);
     });
@@ -628,12 +764,13 @@
     });
   }
 
-  // ====== UI render: Rooms ======
+  // ====== UI render: Rooms (UI only) ======
+  // NOTE: คุณต้องมีไฟล์รูปตาม path นี้ใน GitHub Pages repo
   const ROOMS = [
-    { key:"mind", name:"Mind Room",  subtitle:"โฟกัสงาน / ประชุมเล็ก" },
-    { key:"reality", name:"Reality Room", subtitle:"ประชุมทีม / sync" },
-    { key:"power", name:"Power Room", subtitle:"ประชุมใหญ่ / ตัดสินใจ" },
-    { key:"space", name:"Space Room", subtitle:"ไอเดีย / brainstorm" }
+    { key:"mind",    name:"Mind Room",    subtitle:"โฟกัสงาน / ประชุมเล็ก",   stone:"assets/stones/mind.jpg",    accentRgb:"245, 158, 11" }, // amber
+    { key:"reality", name:"Reality Room", subtitle:"ประชุมทีม / sync",        stone:"assets/stones/reality.jpg", accentRgb:"239, 68, 68" },  // red
+    { key:"power",   name:"Power Room",   subtitle:"ประชุมใหญ่ / ตัดสินใจ",   stone:"assets/stones/power.jpg",   accentRgb:"168, 85, 247" }, // purple
+    { key:"space",   name:"Space Room",   subtitle:"ไอเดีย / brainstorm",     stone:"assets/stones/space.jpg",   accentRgb:"59, 130, 246" }  // blue
   ];
 
   function renderRooms(){
@@ -641,17 +778,42 @@
     ROOMS.forEach(r => {
       const div = document.createElement("div");
       div.className = "roomCard";
+      div.style.setProperty("--accent-rgb", r.accentRgb);
+
+      // UI-only status text (ไม่ดึง booking มาคำนวณใน card เพื่อไม่เปลี่ยนลอจิก)
+      const statusText = "Available";
+      const statusMeta = "Tap to view schedule";
+
       div.innerHTML = `
-        <div class="roomHead">
-          <div>
-            <div class="roomName">${escapeHtml(r.name)}</div>
-            <div class="roomKey">${escapeHtml(r.key.toUpperCase())}</div>
+        <div class="screen">
+          <div class="statusBar">
+            <div class="statusLeft">
+              <div class="statusLabel">
+                <span class="statusDot"></span>
+                <span>${escapeHtml(statusText)}</span>
+              </div>
+              <div class="statusMeta">${escapeHtml(statusMeta)}</div>
+            </div>
+            <div class="roomChip">${escapeHtml(r.key.toUpperCase())}</div>
           </div>
-          <span class="pill">ดูสถานะ</span>
+
+          <div class="stoneBox">
+            <img class="stoneImg" src="${escapeHtml(r.stone)}" alt="${escapeHtml(r.name)}">
+          </div>
+
+          <div class="info">
+            <div class="roomName">
+              <span>${escapeHtml(r.name)}</span>
+              <span class="pill">Room</span>
+            </div>
+            <div class="roomDesc">${escapeHtml(r.subtitle)}</div>
+            <div class="ctaRow">
+              <div class="ctaBtn">Open Room Status</div>
+            </div>
+          </div>
         </div>
-        <div class="roomHint">${escapeHtml(r.subtitle)}</div>
-        <div class="roomBtn">เปิดตารางการจอง</div>
       `;
+
       div.addEventListener("click", () => openRoomStatus(r.key, r.name));
       roomsEl.appendChild(div);
     });
@@ -748,26 +910,21 @@
   function openBookingModal(){
     resetBookingState();
 
-    // time
     const times = buildTimeOptions("08:30","17:30",30);
     fillSelect(bkStart, times, state.booking.start);
     fillSelect(bkEnd, times, state.booking.end);
 
-    // date
     bkDate.value = state.booking.date;
 
-    // dept dropdown
     fillSelect(bkDept, state.departments, "", "— เลือกแผนก —");
     bkName.innerHTML = "";
     bkName.disabled = true;
     bkEmail.value = "";
 
-    // details
     pillDetails.textContent = "หัวข้อ: ยังไม่ระบุ";
     dtTitle.value = "";
     dtDesc.value = "";
 
-    // members
     state.booking.members.clear();
     renderMembersChips();
 
@@ -789,7 +946,6 @@
       return;
     }
 
-    // filter employees by dept
     const list = state.employees
       .filter(e => (e.department || "") === dept)
       .map(e => ({ label: e.name || e.email, value: e.email, name: e.name || "", email: e.email }));
@@ -809,6 +965,7 @@
       o.dataset.email = it.email;
       bkName.appendChild(o);
     });
+
     bkEmail.value = "";
     state.booking.name = "";
     state.booking.email = "";
@@ -828,7 +985,6 @@
     state.booking.name = name;
     state.booking.email = email;
 
-    // auto: add booker to members (กันลืม)
     if (!state.booking.members.has(email)){
       state.booking.members.set(email, { email, name, department: state.booking.dept });
       renderMembersChips();
@@ -838,7 +994,6 @@
   // ====== Details modal ======
   function openDetailsModal(){
     openModal(mDetails);
-    // prefill from current state if any
     dtTitle.value = state.booking.title || dtTitle.value || "";
     dtDesc.value = state.booking.desc || dtDesc.value || "";
   }
@@ -856,7 +1011,6 @@
 
   // ====== Members modal ======
   function openMembersModal(){
-    // dept dropdown
     fillSelect(mbDept, state.departments, "", "— เลือกแผนก —");
     mbName.innerHTML = "";
     mbChips.innerHTML = "";
@@ -932,7 +1086,6 @@
   }
 
   function mbSaveAndClose(){
-    // ปิด modal และอัปเดตสรุปในฟอร์มจอง
     renderMembersChips();
     closeModal(mMembers);
   }
@@ -947,7 +1100,7 @@
 
     const dept = bkDept.value || "";
     const bookerEmail = bkEmail.value || "";
-    const title = (state.booking.title || "").trim(); // required
+    const title = (state.booking.title || "").trim();
     const desc = (state.booking.desc || "").trim();
 
     if (!date){ bkLog.textContent += "ERROR: ต้องเลือกวันที่\n"; alert("ต้องเลือกวันที่"); return; }
@@ -970,7 +1123,6 @@
       return;
     }
 
-    // attendees: รวมสมาชิก + ผู้จอง (กันหลุด)
     const members = Array.from(state.booking.members.keys());
     if (!members.includes(bookerEmail)) members.unshift(bookerEmail);
     const attendees = members.join(", ");
@@ -994,8 +1146,6 @@
     if (res && res.ok){
       alert("บันทึกการจองเรียบร้อย");
       closeModal(mBook);
-
-      // refresh room list to show new booking
       await refreshRoomBookings();
     } else {
       alert("บันทึกล้มเหลว: " + (res?.error || "unknown"));
@@ -1025,7 +1175,6 @@
       position: e.position || ""
     }));
 
-    // departments (unique)
     const deps = new Set();
     state.employees.forEach(e => { if (e.department) deps.add(e.department); });
     state.departments = Array.from(deps).sort((a,b)=>a.localeCompare(b));
@@ -1036,14 +1185,12 @@
   }
 
   // ====== Event wiring ======
-  // Room modal
   document.getElementById("mRoomClose").onclick = () => closeModal(mRoom);
   document.getElementById("mRoomClose2").onclick = () => closeModal(mRoom);
   document.getElementById("mRoomRefresh").onclick = () => refreshRoomBookings();
   mRoomDate.addEventListener("change", () => refreshRoomBookings());
   document.getElementById("mRoomBookBtn").onclick = () => { closeModal(mRoom); openBookingModal(); };
 
-  // Book modal
   document.getElementById("mBookClose").onclick = () => closeModal(mBook);
   document.getElementById("mBookCancel").onclick = () => closeModal(mBook);
   bkDept.addEventListener("change", onDeptChange);
@@ -1052,12 +1199,10 @@
   document.getElementById("btnMembers").onclick = () => openMembersModal();
   document.getElementById("mBookSave").onclick = () => saveBooking();
 
-  // Details modal
   document.getElementById("mDetailsClose").onclick = () => closeModal(mDetails);
   document.getElementById("mDetailsCancel").onclick = () => closeModal(mDetails);
   document.getElementById("mDetailsSave").onclick = () => saveDetails();
 
-  // Members modal
   document.getElementById("mMembersClose").onclick = () => closeModal(mMembers);
   document.getElementById("mMembersCancel").onclick = () => closeModal(mMembers);
   mbDept.addEventListener("change", onMbDeptChange);
@@ -1065,12 +1210,10 @@
   document.getElementById("mbClear").onclick = () => mbClearAll();
   document.getElementById("mMembersSave").onclick = () => mbSaveAndClose();
 
-  // click outside modal close (optional)
   [mRoom, mBook, mDetails, mMembers].forEach(ov => {
     ov.addEventListener("click", (e) => { if (e.target === ov) closeModal(ov); });
   });
 
-  // run
   init();
 </script>
 </body>
