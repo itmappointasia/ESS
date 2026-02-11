@@ -3,80 +3,272 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Room Booking Test (GitHub Pages → Apps Script JSONP)</title>
+  <title>Room Booking (GitHub Pages → Apps Script JSONP)</title>
   <style>
-    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; padding:16px; line-height:1.4}
-    label{display:inline-block; min-width:140px}
-    input,select{padding:6px 8px; min-width:360px}
-    button{padding:8px 12px; cursor:pointer; margin-right:8px}
-    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto; min-height:120px}
-    .row{margin:10px 0}
-    .hint{color:#555; font-size:12px}
+    :root{
+      --bg:#f5f7fb;
+      --card:#fff;
+      --ink:#0b1b3a;
+      --muted:#6b7690;
+      --line:#dbe3f3;
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --shadow:0 10px 30px rgba(15,23,42,.10);
+      --r:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:18px;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg); color:var(--ink); line-height:1.4;
+    }
+    .wrap{max-width:920px; margin:0 auto}
+    .top{
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:12px; margin-bottom:14px;
+    }
+    h2{margin:0; font-size:18px}
+    .sub{color:var(--muted); font-size:13px}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--r); box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+    @media (max-width: 780px){
+      body{padding:12px}
+      .grid{grid-template-columns:1fr}
+    }
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+    input,select,textarea{
+      width:100%;
+      padding:10px 10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+    }
+    textarea{min-height:88px; resize:vertical}
+    input:focus,select:focus,textarea:focus{
+      border-color:rgba(37,99,235,.6);
+      box-shadow:0 0 0 4px rgba(37,99,235,.12);
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .btn{
+      appearance:none; border:0; border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-weight:650;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 8px 20px rgba(37,99,235,.25);
+    }
+    .btn:hover{background:var(--primary2)}
+    .btn.ghost{
+      background:#fff; color:var(--ink);
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+    .btn.danger{
+      background:var(--danger);
+      box-shadow:0 8px 20px rgba(220,38,38,.18);
+    }
+    .hint{font-size:12px; color:var(--muted); margin-top:6px}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      font-size:12px; border:1px solid var(--line);
+      background:#fff;
+    }
+    .dot{width:8px; height:8px; border-radius:50%}
+    .dot.ok{background:var(--ok)}
+    .dot.no{background:var(--danger)}
+    pre{
+      margin:12px 0 0;
+      background:#0b1020; color:#c9f5c9;
+      padding:12px; border-radius:12px; overflow:auto;
+      min-height:140px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .err{color:var(--danger); font-weight:650}
   </style>
 </head>
 <body>
-  <h3>Room Booking Test (GitHub Pages → Apps Script JSONP)</h3>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h2>Room Booking (GitHub Pages → Apps Script JSONP)</h2>
+        <div class="sub">UI ใช้งานจริง: เลือกวันที่/เวลา → แปลงเป็น ISO +07:00 → ยิงไป Code.gs เพื่อบันทึกลง Google Sheet</div>
+      </div>
+      <div class="badge" id="statusBadge">
+        <span class="dot no" id="statusDot"></span>
+        <span id="statusText">Not connected</span>
+      </div>
+    </div>
 
-  <div class="row">
-    <label>Room:</label>
-    <select id="room">
-      <option value="mind">Mind Room</option>
-      <option value="power">Power Room</option>
-      <option value="reality">Reality Room</option>
-      <option value="space">Space Room</option>
-    </select>
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label>Room</label>
+          <select id="room">
+            <option value="mind">Mind Room</option>
+            <option value="power">Power Room</option>
+            <option value="reality">Reality Room</option>
+            <option value="space">Space Room</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Booker Email (ผู้จอง)</label>
+          <input id="bookerEmail" value="ice.jirapon@gmail.com" />
+          <div class="hint">ระบบจะ lookup ชื่อ/แผนกจากชีต “ข้อมูลพนักงาน” ด้วยอีเมลนี้</div>
+        </div>
+
+        <div>
+          <label>Book Date</label>
+          <input id="date" type="date" />
+          <div class="hint">วัน/เดือน/ปี (จะถูกแปลงเป็น ISO +07:00 ให้อัตโนมัติ)</div>
+        </div>
+
+        <div>
+          <label>Meeting Title</label>
+          <input id="title" value="Test Meeting" />
+        </div>
+
+        <div>
+          <label>Start Time</label>
+          <select id="startTime"></select>
+          <div class="hint">ค่าเริ่มต้น: 08:30</div>
+        </div>
+
+        <div>
+          <label>End Time</label>
+          <select id="endTime"></select>
+          <div class="hint">ค่าเริ่มต้น: 17:30</div>
+        </div>
+
+        <div style="grid-column:1/-1">
+          <label>Attendees (comma)</label>
+          <input id="att" value="ice.jirapon@gmail.com" />
+          <div class="hint">สมาชิกที่เข้าร่วมการประชุม (คั่นด้วย comma)</div>
+        </div>
+
+        <div style="grid-column:1/-1">
+          <label>Description</label>
+          <textarea id="desc">Created from GitHub Pages</textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn ghost" id="ping">Ping Backend</button>
+        <button class="btn" id="book">บันทึกการจอง</button>
+        <button class="btn danger" id="clear">Clear Log</button>
+      </div>
+
+      <pre id="out"></pre>
+    </div>
   </div>
-
-  <div class="row">
-    <label>Title:</label>
-    <input id="title" value="Test Meeting" />
-  </div>
-
-  <div class="row">
-    <label>Start (ISO):</label>
-    <input id="start" value="2026-02-12T08:00:00+07:00" />
-    <div class="hint">ตัวอย่าง: 2026-02-12T08:00:00+07:00</div>
-  </div>
-
-  <div class="row">
-    <label>End (ISO):</label>
-    <input id="end" value="2026-02-12T09:00:00+07:00" />
-    <div class="hint">ต้องมากกว่า Start</div>
-  </div>
-
-  <div class="row">
-    <label>Attendees (comma):</label>
-    <input id="att" value="ice.jirapon@gmail.com" />
-  </div>
-
-  <div class="row">
-    <button id="ping">Ping Backend</button>
-    <button id="book">Create Meeting</button>
-    <button id="clear">Clear</button>
-  </div>
-
-  <pre id="out"></pre>
 
 <script>
   // ✅ ต้องเป็น /exec
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCxX_szEHnOEX8wjlIukDCupjOmC9wSow/exec";
   const API_KEY = "ESS-ROOM-2026";
+  const TZ_OFFSET = "+07:00";
 
   const outEl = document.getElementById("out");
   const log = (m) => { outEl.textContent += m + "\n"; };
-  const reset = () => { outEl.textContent = ""; };
+  const resetLog = () => { outEl.textContent = ""; };
+
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+  function setStatus(ok, text){
+    statusDot.className = "dot " + (ok ? "ok" : "no");
+    statusText.textContent = text;
+  }
+
+  // ---------- Time options ----------
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function buildTimeOptions(start="08:30", end="17:30", stepMin=30){
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    let t = sh*60 + sm;
+    const tEnd = eh*60 + em;
+
+    const list = [];
+    while (t <= tEnd){
+      const hh = Math.floor(t/60);
+      const mm = t%60;
+      list.push(`${pad(hh)}:${pad(mm)}`);
+      t += stepMin;
+    }
+    return list;
+  }
+
+  function fillSelect(sel, options, selected){
+    sel.innerHTML = "";
+    options.forEach(v => {
+      const o = document.createElement("option");
+      o.value = v;
+      o.textContent = v;
+      if (v === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  const startSel = document.getElementById("startTime");
+  const endSel = document.getElementById("endTime");
+  const timeOptions = buildTimeOptions("08:30","17:30",30);
+  fillSelect(startSel, timeOptions, "08:30");
+  fillSelect(endSel, timeOptions, "17:30");
+
+  // Default date = tomorrow (ตามเวลาประเทศไทย)
+  (function initDate(){
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const yyyy = d.getFullYear();
+    const mm = pad(d.getMonth()+1);
+    const dd = pad(d.getDate());
+    document.getElementById("date").value = `${yyyy}-${mm}-${dd}`;
+  })();
+
+  // ---------- Utilities ----------
+  function isValidEmail(s){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||"").trim());
+  }
+
+  function makeISO(dateYYYYMMDD, hhmm){
+    // dateYYYYMMDD: "2026-02-12"
+    // hhmm: "08:30"
+    const [y,m,d] = dateYYYYMMDD.split("-").map(Number);
+    const [hh,mm] = hhmm.split(":").map(Number);
+    // สร้าง string ISO แบบชัดเจน +07:00
+    return `${pad(y)}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00${TZ_OFFSET}`;
+  }
+
+  function isPastBangkok(iso){
+    // เปรียบเทียบโดยแปลงเป็น Date (JS เข้าใจ offset)
+    const t = new Date(iso).getTime();
+    return t <= Date.now();
+  }
 
   function jsonpCall(params){
-    reset();
+    resetLog();
 
-    // สร้าง callback ชื่อปลอดภัย
     const cb = "cb_" + Math.random().toString(36).slice(2);
     params.callback = cb;
 
-    // timeout กันเงียบ
     const timer = setTimeout(() => {
       log("TIMEOUT: ไม่มี callback กลับมา (เช็ค Deploy/Permission/URL)");
       cleanup();
+      setStatus(false, "Timeout");
     }, 12000);
 
     function cleanup(){
@@ -89,8 +281,13 @@
       log(JSON.stringify(res, null, 2));
       cleanup();
 
-      if (res && res.ok) alert("OK");
-      else alert("FAIL: " + (res && res.error ? res.error : "unknown"));
+      if (res && res.ok){
+        alert("OK");
+        setStatus(true, "Connected");
+      } else {
+        alert("FAIL: " + (res && res.error ? res.error : "unknown"));
+        setStatus(false, "Error");
+      }
     };
 
     const qs = new URLSearchParams();
@@ -99,7 +296,6 @@
       qs.set(k, String(v));
     });
 
-    // ✅ แสดง REQUEST ชัดๆ
     const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
     log("REQUEST:");
     log(url);
@@ -110,44 +306,72 @@
       log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404/permission/deploy)");
       cleanup();
       alert("SCRIPT ERROR");
+      setStatus(false, "Script error");
     };
     document.body.appendChild(s);
   }
 
+  // ---------- Actions ----------
   document.getElementById("ping").onclick = () => {
-    jsonpCall({
-      action: "ping",              // ✅ ต้องเป็น ping
-      apiKey: API_KEY
-    });
+    jsonpCall({ action:"ping", apiKey:API_KEY });
   };
 
   document.getElementById("book").onclick = () => {
     const roomKey = document.getElementById("room").value;
-    const title = document.getElementById("title").value;
-    const start = document.getElementById("start").value;
-    const end = document.getElementById("end").value;
-    const attendees = document.getElementById("att").value;
+    const title = document.getElementById("title").value.trim();
+    const date = document.getElementById("date").value;
+    const startTime = startSel.value;
+    const endTime = endSel.value;
 
-    if (!start || !end) {
-      reset();
-      log("ERROR: กรุณาใส่ Start/End ISO ให้ครบ");
-      alert("ใส่ Start/End ก่อน");
+    const bookerEmail = document.getElementById("bookerEmail").value.trim().toLowerCase();
+    const attendees = document.getElementById("att").value.trim();
+    const description = document.getElementById("desc").value.trim();
+
+    // Validate
+    if (!date){
+      resetLog(); log("ERROR: กรุณาเลือก Book Date"); alert("เลือกวันที่ก่อน"); return;
+    }
+    if (!title){
+      resetLog(); log("ERROR: กรุณาใส่หัวข้อการประชุม"); alert("ใส่หัวข้อก่อน"); return;
+    }
+    if (!isValidEmail(bookerEmail)){
+      resetLog(); log("ERROR: Booker Email ไม่ถูกต้อง"); alert("อีเมลผู้จองไม่ถูกต้อง"); return;
+    }
+
+    const startISO = makeISO(date, startTime);
+    const endISO   = makeISO(date, endTime);
+
+    if (new Date(endISO).getTime() <= new Date(startISO).getTime()){
+      resetLog();
+      log("ERROR: End ต้องมากกว่า Start");
+      log(`StartISO=${startISO}`);
+      log(`EndISO=${endISO}`);
+      alert("End ต้องมากกว่า Start");
+      return;
+    }
+
+    if (isPastBangkok(startISO)){
+      resetLog();
+      log("ERROR: ห้ามจองเวลาที่ผ่านมาแล้ว");
+      log(`StartISO=${startISO}`);
+      alert("ห้ามจองเวลาที่ผ่านมาแล้ว");
       return;
     }
 
     jsonpCall({
-      action: "createmeeting",     // ✅ สำคัญ: ต้องเป็น createmeeting (ตัวเล็กติดกัน)
+      action: "createmeeting",
       apiKey: API_KEY,
       roomKey,
       title,
-      start,
-      end,
+      start: startISO,
+      end: endISO,
       attendees,
-      description: "Created from GitHub Pages"
+      description,
+      bookerEmail // ✅ ส่งแยกให้ Code.gs
     });
   };
 
-  document.getElementById("clear").onclick = () => reset();
+  document.getElementById("clear").onclick = () => resetLog();
 </script>
 </body>
 </html>
