@@ -6,16 +6,16 @@
   <title>ESS – Room Booking (Test)</title>
   <style>
     body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; padding:16px; line-height:1.4}
-    label{display:inline-block; min-width:120px}
-    input,select{padding:6px 8px; min-width:320px}
-    button{padding:8px 12px; cursor:pointer}
-    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto}
+    label{display:inline-block; min-width:140px}
+    input,select{padding:6px 8px; min-width:340px}
+    button{padding:8px 12px; cursor:pointer; margin-right:8px}
+    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto; min-height:160px}
     .row{margin:10px 0}
     .hint{color:#555; font-size:12px}
   </style>
 </head>
 <body>
-  <h3>Room Booking Test (GitHub Pages → Apps Script)</h3>
+  <h3>Room Booking Test (GitHub Pages → Apps Script JSONP)</h3>
 
   <div class="row">
     <label>Room:</label>
@@ -34,19 +34,18 @@
 
   <div class="row">
     <label>Start (ISO):</label>
-    <input id="start" placeholder="2026-02-11T10:00:00+07:00" />
+    <input id="start" placeholder="2026-02-12T08:00:00+07:00" />
     <div class="hint">ตัวอย่าง: 2026-02-12T08:00:00+07:00</div>
   </div>
 
   <div class="row">
     <label>End (ISO):</label>
-    <input id="end" placeholder="2026-02-11T11:00:00+07:00" />
-    <div class="hint">ต้องมากกว่า Start</div>
+    <input id="end" placeholder="2026-02-12T09:00:00+07:00" />
   </div>
 
   <div class="row">
     <label>Attendees (comma):</label>
-    <input id="att" placeholder="a@x.com,b@y.com" />
+    <input id="att" placeholder="ice.jirapon@gmail.com" />
   </div>
 
   <div class="row">
@@ -57,13 +56,13 @@
   <pre id="out"></pre>
 
 <script>
-  // ✅ ใช้ /exec เท่านั้น
+  // ✅ ต้องเป็น script.google.com/macros/s/.../exec
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
   const API_KEY = "ESS-ROOM-2026";
 
   const outEl = document.getElementById("out");
-  const log = (m) => { outEl.textContent += m + "\n"; };
-  const reset = () => { outEl.textContent = ""; };
+  const reset = () => outEl.textContent = "";
+  const log = (m) => outEl.textContent += m + "\n";
 
   function jsonpCall(params){
     reset();
@@ -71,12 +70,10 @@
     const cb = "cb_" + Math.random().toString(36).slice(2);
     params.callback = cb;
 
-    // กันกรณีเงียบ
-    const timeoutMs = 12000;
     const timer = setTimeout(() => {
-      log("TIMEOUT: ไม่มี callback กลับมา (เช็ค URL/Deploy/JSONP)");
+      log("TIMEOUT: ไม่มี callback กลับมา");
       cleanup();
-    }, timeoutMs);
+    }, 12000);
 
     function cleanup(){
       clearTimeout(timer);
@@ -87,8 +84,7 @@
       log("CALLBACK HIT:");
       log(JSON.stringify(res, null, 2));
       cleanup();
-      if (res && res.ok) alert("OK");
-      else alert("FAIL");
+      alert(res && res.ok ? "OK" : "FAIL");
     };
 
     const qs = new URLSearchParams();
@@ -104,7 +100,7 @@
     const s = document.createElement("script");
     s.src = url;
     s.onerror = () => {
-      log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404 หรือ permission/Deploy)");
+      log("SCRIPT ERROR: โหลดไม่สำเร็จ (URL ผิด/Deploy/Permission)");
       cleanup();
       alert("SCRIPT ERROR");
     };
@@ -112,10 +108,7 @@
   }
 
   document.getElementById("ping").onclick = () => {
-    jsonpCall({
-      action: "ping",
-      apiKey: API_KEY
-    });
+    jsonpCall({ action:"ping", apiKey:API_KEY });
   };
 
   document.getElementById("book").onclick = () => {
@@ -125,7 +118,6 @@
     const end = document.getElementById("end").value;
     const attendees = document.getElementById("att").value;
 
-    // validation ฝั่งหน้าเว็บแบบเร็วๆ
     if (!start || !end) {
       reset();
       log("ERROR: กรุณาใส่ Start/End ISO ให้ครบ");
@@ -134,14 +126,14 @@
     }
 
     jsonpCall({
-      action: "createmeeting",
-      apiKey: API_KEY,
+      action:"createMeeting",     // ✅ พิมพ์แบบนี้ได้ เพราะ backend toLowerCase
+      apiKey:API_KEY,
       roomKey,
       title,
       start,
       end,
-      attendees, // ส่งเป็น string คั่น comma ให้ backend split เอง
-      description: "Created from GitHub Pages"
+      attendees,
+      description:"Created from GitHub Pages"
     });
   };
 </script>
