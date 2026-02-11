@@ -1,31 +1,40 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>ESS – Ping Test</title>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Ping Test</title></head>
 <body>
-
-<button onclick="pingBackend()">Ping Backend</button>
+  <button id="btn">Ping Backend</button>
+  <pre id="log" style="white-space:pre-wrap"></pre>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCxX_szEHnOEX8wjlIukDCupjOmC9wSow/exec";
+const WEBAPP_URL = "ใส่_URL_ของคุณตรงนี้"; // /exec หรือ echo
 const API_KEY = "ESS-ROOM-2026";
 
-function pingBackend(){
+const log = (m)=> document.getElementById('log').textContent += m + "\n";
+
+document.getElementById("btn").onclick = () => {
   const cb = "cb_" + Math.random().toString(36).slice(2);
 
+  // กัน “เงียบ”: ถ้า 6 วิไม่กลับมาให้ฟ้อง
+  const t = setTimeout(()=>log("TIMEOUT: ไม่มี callback กลับมา (มักเกิดจาก URL ผิด/JSONP ไม่ถูก)"), 6000);
+
   window[cb] = (res) => {
-    console.log("CALLBACK HIT:", res);
-    alert("PING OK: " + JSON.stringify(res));
+    clearTimeout(t);
+    log("CALLBACK HIT: " + JSON.stringify(res));
+    alert("PING OK");
     delete window[cb];
   };
 
   const s = document.createElement("script");
-  s.src = `${WEBAPP_URL}?action=ping&apiKey=${API_KEY}&callback=${cb}`;
-  document.body.appendChild(s);
-}
-</script>
+  s.onerror = () => {
+    clearTimeout(t);
+    log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404 หรือ permission)");
+  };
 
+  const url = `${WEBAPP_URL}?action=ping&apiKey=${encodeURIComponent(API_KEY)}&callback=${cb}&_=${Date.now()}`;
+  log("REQUEST: " + url);
+  s.src = url;
+  document.body.appendChild(s);
+};
+</script>
 </body>
 </html>
