@@ -4,7 +4,9 @@ const API_KEY = "ESS-ROOM-2026";
 
 function pingBackend(){
   const cb = "cb_" + Math.random().toString(36).slice(2);
+
   window[cb] = (res) => {
+    console.log("CALLBACK HIT:", res);   // 👈 เพิ่มบรรทัดนี้
     alert("PING OK: " + JSON.stringify(res));
     delete window[cb];
   };
