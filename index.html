@@ -2,72 +2,148 @@
 <html lang="th">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ESS – Room Booking (Test)</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; padding:16px; line-height:1.4}
+    label{display:inline-block; min-width:120px}
+    input,select{padding:6px 8px; min-width:320px}
+    button{padding:8px 12px; cursor:pointer}
+    pre{background:#111; color:#0f0; padding:10px; border-radius:8px; overflow:auto}
+    .row{margin:10px 0}
+    .hint{color:#555; font-size:12px}
+  </style>
 </head>
 <body>
-  <h3>Room Booking Test</h3>
+  <h3>Room Booking Test (GitHub Pages → Apps Script)</h3>
 
-  <label>Room:</label>
-  <select id="room">
-    <option value="mind">Mind Room</option>
-    <option value="power">Power Room</option>
-    <option value="reality">Reality Room</option>
-    <option value="space">Space Room</option>
-  </select>
-  <br/><br/>
+  <div class="row">
+    <label>Room:</label>
+    <select id="room">
+      <option value="mind">Mind Room</option>
+      <option value="power">Power Room</option>
+      <option value="reality">Reality Room</option>
+      <option value="space">Space Room</option>
+    </select>
+  </div>
 
-  <label>Title:</label>
-  <input id="title" value="Test Meeting" />
-  <br/><br/>
+  <div class="row">
+    <label>Title:</label>
+    <input id="title" value="Test Meeting" />
+  </div>
 
-  <label>Start (ISO):</label>
-  <input id="start" placeholder="2026-02-11T10:00:00+07:00" />
-  <br/><br/>
+  <div class="row">
+    <label>Start (ISO):</label>
+    <input id="start" placeholder="2026-02-11T10:00:00+07:00" />
+    <div class="hint">ตัวอย่าง: 2026-02-12T08:00:00+07:00</div>
+  </div>
 
-  <label>End (ISO):</label>
-  <input id="end" placeholder="2026-02-11T11:00:00+07:00" />
-  <br/><br/>
+  <div class="row">
+    <label>End (ISO):</label>
+    <input id="end" placeholder="2026-02-11T11:00:00+07:00" />
+    <div class="hint">ต้องมากกว่า Start</div>
+  </div>
 
-  <label>Attendees (comma):</label>
-  <input id="att" placeholder="a@x.com,b@y.com" />
-  <br/><br/>
+  <div class="row">
+    <label>Attendees (comma):</label>
+    <input id="att" placeholder="a@x.com,b@y.com" />
+  </div>
 
-  <button id="book">Create Meeting</button>
-  <pre id="out" style="white-space:pre-wrap"></pre>
+  <div class="row">
+    <button id="ping">Ping Backend</button>
+    <button id="book">Create Meeting</button>
+  </div>
+
+  <pre id="out"></pre>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
-const API_KEY = "ESS-ROOM-2026";
+  // ✅ ใช้ /exec เท่านั้น
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
+  const API_KEY = "ESS-ROOM-2026";
 
-const out = (m)=> document.getElementById("out").textContent = m;
+  const outEl = document.getElementById("out");
+  const log = (m) => { outEl.textContent += m + "\n"; };
+  const reset = () => { outEl.textContent = ""; };
 
-document.getElementById("book").onclick = async () => {
-  const payload = {
-    action: "createMeeting",
-    apiKey: API_KEY,
-    roomKey: document.getElementById("room").value,
-    title: document.getElementById("title").value,
-    start: document.getElementById("start").value,
-    end: document.getElementById("end").value,
-    attendees: document.getElementById("att").value.split(",").map(s=>s.trim()).filter(Boolean),
-    organizerEmail: "itmappointasia@gmail.com",
-    description: "Created from GitHub Pages"
-  };
+  function jsonpCall(params){
+    reset();
 
-  try{
-    const res = await fetch(WEBAPP_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload),
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    params.callback = cb;
+
+    // กันกรณีเงียบ
+    const timeoutMs = 12000;
+    const timer = setTimeout(() => {
+      log("TIMEOUT: ไม่มี callback กลับมา (เช็ค URL/Deploy/JSONP)");
+      cleanup();
+    }, timeoutMs);
+
+    function cleanup(){
+      clearTimeout(timer);
+      try { delete window[cb]; } catch(_){}
+    }
+
+    window[cb] = (res) => {
+      log("CALLBACK HIT:");
+      log(JSON.stringify(res, null, 2));
+      cleanup();
+      if (res && res.ok) alert("OK");
+      else alert("FAIL");
+    };
+
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v]) => {
+      if (v === undefined || v === null) return;
+      qs.set(k, String(v));
     });
 
-    // ถ้า Apps Script ตอบกลับเป็น JSON ปกติ
-    const text = await res.text();
-    out(text);
-  }catch(err){
-    out("ERROR: " + err);
+    const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
+    log("REQUEST:");
+    log(url);
+
+    const s = document.createElement("script");
+    s.src = url;
+    s.onerror = () => {
+      log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404 หรือ permission/Deploy)");
+      cleanup();
+      alert("SCRIPT ERROR");
+    };
+    document.body.appendChild(s);
   }
-};
+
+  document.getElementById("ping").onclick = () => {
+    jsonpCall({
+      action: "ping",
+      apiKey: API_KEY
+    });
+  };
+
+  document.getElementById("book").onclick = () => {
+    const roomKey = document.getElementById("room").value;
+    const title = document.getElementById("title").value;
+    const start = document.getElementById("start").value;
+    const end = document.getElementById("end").value;
+    const attendees = document.getElementById("att").value;
+
+    // validation ฝั่งหน้าเว็บแบบเร็วๆ
+    if (!start || !end) {
+      reset();
+      log("ERROR: กรุณาใส่ Start/End ISO ให้ครบ");
+      alert("ใส่ Start/End ก่อน");
+      return;
+    }
+
+    jsonpCall({
+      action: "createMeeting",
+      apiKey: API_KEY,
+      roomKey,
+      title,
+      start,
+      end,
+      attendees, // ส่งเป็น string คั่น comma ให้ backend split เอง
+      description: "Created from GitHub Pages"
+    });
+  };
 </script>
 </body>
 </html>
