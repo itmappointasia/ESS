@@ -1,39 +1,72 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Ping Test</title></head>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>ESS – Room Booking (Test)</title>
+</head>
 <body>
-  <button id="btn">Ping Backend</button>
-  <pre id="log" style="white-space:pre-wrap"></pre>
+  <h3>Room Booking Test</h3>
+
+  <label>Room:</label>
+  <select id="room">
+    <option value="mind">Mind Room</option>
+    <option value="power">Power Room</option>
+    <option value="reality">Reality Room</option>
+    <option value="space">Space Room</option>
+  </select>
+  <br/><br/>
+
+  <label>Title:</label>
+  <input id="title" value="Test Meeting" />
+  <br/><br/>
+
+  <label>Start (ISO):</label>
+  <input id="start" placeholder="2026-02-11T10:00:00+07:00" />
+  <br/><br/>
+
+  <label>End (ISO):</label>
+  <input id="end" placeholder="2026-02-11T11:00:00+07:00" />
+  <br/><br/>
+
+  <label>Attendees (comma):</label>
+  <input id="att" placeholder="a@x.com,b@y.com" />
+  <br/><br/>
+
+  <button id="book">Create Meeting</button>
+  <pre id="out" style="white-space:pre-wrap"></pre>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCxX_szEHnOEX8wjlIukDCupjOmC9wSow/exec"; // /exec หรือ echo
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCx_sZEHnOEX8wjIukDCupjOmC9wSow/exec";
 const API_KEY = "ESS-ROOM-2026";
 
-const log = (m)=> document.getElementById('log').textContent += m + "\n";
+const out = (m)=> document.getElementById("out").textContent = m;
 
-document.getElementById("btn").onclick = () => {
-  const cb = "cb_" + Math.random().toString(36).slice(2);
-
-  // กัน “เงียบ”: ถ้า 6 วิไม่กลับมาให้ฟ้อง
-  const t = setTimeout(()=>log("TIMEOUT: ไม่มี callback กลับมา (มักเกิดจาก URL ผิด/JSONP ไม่ถูก)"), 6000);
-
-  window[cb] = (res) => {
-    clearTimeout(t);
-    log("CALLBACK HIT: " + JSON.stringify(res));
-    alert("PING OK");
-    delete window[cb];
+document.getElementById("book").onclick = async () => {
+  const payload = {
+    action: "createMeeting",
+    apiKey: API_KEY,
+    roomKey: document.getElementById("room").value,
+    title: document.getElementById("title").value,
+    start: document.getElementById("start").value,
+    end: document.getElementById("end").value,
+    attendees: document.getElementById("att").value.split(",").map(s=>s.trim()).filter(Boolean),
+    organizerEmail: "itmappointasia@gmail.com",
+    description: "Created from GitHub Pages"
   };
 
-  const s = document.createElement("script");
-  s.onerror = () => {
-    clearTimeout(t);
-    log("SCRIPT ERROR: โหลดสคริปต์ไม่สำเร็จ (มักเป็น 404 หรือ permission)");
-  };
+  try{
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload),
+    });
 
-  const url = `${WEBAPP_URL}?action=ping&apiKey=${encodeURIComponent(API_KEY)}&callback=${cb}&_=${Date.now()}`;
-  log("REQUEST: " + url);
-  s.src = url;
-  document.body.appendChild(s);
+    // ถ้า Apps Script ตอบกลับเป็น JSON ปกติ
+    const text = await res.text();
+    out(text);
+  }catch(err){
+    out("ERROR: " + err);
+  }
 };
 </script>
 </body>
