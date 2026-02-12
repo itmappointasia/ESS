@@ -4,208 +4,198 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ESS - Meeting Rooms</title>
-  
   <style>
     :root{
+      /* ✅ LIGHT THEME (White) */
       --bg:#ffffff;
-      --ink:#111827;
-      --muted:#6b7280;
       --card:#ffffff;
-      --line:rgba(17,24,39,.18);
+      --card2:#f6f8fc;
 
-      --shadow:0 18px 55px rgba(17,24,39,.10);
-      --r:24px;
+      --ink:#0f172a;        /* slate-900 */
+      --muted:#64748b;      /* slate-500 */
+      --line:rgba(15,23,42,.12);
 
-      --btn:#111827;
-      --btnText:#ffffff;
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+
+      --danger:#dc2626;
+      --warn:#d97706;
+      --ok:#16a34a;
+
+      /* shadow lighter for white UI */
+      --shadow:0 18px 60px rgba(15,23,42,.10);
+      --r:18px;
     }
+
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      background:var(--bg);
+      background: var(--bg);
       color:var(--ink);
     }
 
-    /* ===== Layout ===== */
-    .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 28px}
-    @media (min-width: 900px){
-      .wrap{padding:24px 22px 34px}
-    }
+    .wrap{max-width:1100px;margin:0 auto;padding:34px 26px}
 
+    /* ===== Header (Logo like your sample) ===== */
     .top{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:14px;
-      padding:10px 4px 18px;
+      gap:16px;
+      margin-bottom:22px;
     }
-    .brand{
+    .brandRow{
       display:flex;
       align-items:flex-start;
       gap:14px;
-      min-width:0;
     }
-    .logo{
-      width:240px;
-      height:auto;
-      display:block;
-      object-fit:contain;
-      max-width:54vw;
+    .brandLogo{
+      width:64px;height:64px;object-fit:contain;
+      border-radius:14px;
+      background:#fff;
     }
-    @media (max-width: 420px){
-      .logo{width:200px}
+    .brandText{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      padding-top:2px;
+    }
+    .brandText .t1{
+      font-weight:950;
+      font-size:34px;
+      letter-spacing:.2px;
+      color:#0f172a;
+    }
+    .brandText .t2{
+      font-weight:650;
+      font-size:26px;
+      color:rgba(15,23,42,.72);
+      letter-spacing:.2px;
+      margin-top:4px;
     }
 
     .badge{
       display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:#fff;
-      font-size:12px;
-      color:var(--muted);
-      box-shadow:0 10px 26px rgba(17,24,39,.08);
-      white-space:nowrap;
-      margin-top:2px;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;
+      font-size:12px;color:var(--muted);
+      box-shadow:0 6px 18px rgba(15,23,42,.06);
+      margin-top:8px;
+      flex:0 0 auto;
     }
     .dot{width:9px;height:9px;border-radius:50%}
-    .dot.ok{background:#16a34a}
-    .dot.no{background:#dc2626}
+    .dot.ok{background:var(--ok)}
+    .dot.no{background:var(--danger)}
 
-    /* ===== Rooms grid (keep desktop close to mobile) ===== */
+    /* ===== Rooms grid: 2x2 like sample ===== */
     .rooms{
       display:grid;
-      grid-template-columns:1fr;
-      gap:18px;
+      grid-template-columns:repeat(2, 1fr);
+      gap:36px 46px;
       align-items:stretch;
+      margin-top:8px;
     }
-    @media (min-width: 720px){
-      .rooms{grid-template-columns:1fr 1fr;gap:22px}
+    @media (max-width: 980px){
+      .wrap{padding:22px 16px}
+      .rooms{gap:22px 18px}
+      .brandText .t1{font-size:28px}
+      .brandText .t2{font-size:20px}
     }
-    @media (min-width: 1200px){
-      .rooms{grid-template-columns:1fr 1fr;gap:26px}
+    @media (max-width: 720px){
+      .top{flex-direction:column;align-items:flex-start}
+      .badge{margin-top:0}
+      .rooms{grid-template-columns:1fr}
     }
 
-    /* ===== Card (match mock) ===== */
+    /* ===== Card style to match sample ===== */
     .roomCard{
-      --accent:#2563eb;
-      border:3px solid var(--accent);
-      border-radius:26px;
-      background:#fff;
-      box-shadow:var(--shadow);
-      padding:18px;
       position:relative;
-      min-height:340px;
+      background:#fff;
+      border-radius:22px;
+      cursor:pointer;
+      padding:16px;
+      transition:.16s ease;
+      box-shadow:0 14px 44px rgba(15,23,42,.07);
+      overflow:hidden;
+      border:2.5px solid rgba(var(--accent-rgb), 1);   /* outer border color */
+      min-height:330px;
+    }
+    .roomCard:hover{transform:translateY(-2px)}
+
+    .tileInner{
+      border-radius:18px;
+      height:100%;
+      padding:14px;
+      background:#fff;
+      border:2px solid rgba(var(--accent-rgb), 1);     /* inner border color */
       display:flex;
       flex-direction:column;
       gap:14px;
-      cursor:pointer;
-      transition:transform .16s ease, box-shadow .16s ease;
     }
-    .roomCard:hover{transform:translateY(-2px); box-shadow:0 24px 70px rgba(17,24,39,.12)}
-    .roomCard:active{transform:translateY(0px)}
 
-    /* header pill + stone */
-    .cardHead{
+    .tileTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
     }
-    .pillTitle{
-      border:3px solid var(--accent);
-      border-radius:16px;
+
+    /* Title pill (left) */
+    .titlePill{
+      display:inline-flex;
+      align-items:center;
       padding:10px 12px;
+      border-radius:16px;
+      border:2px solid rgba(var(--accent-rgb), 1);
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.06);
       font-weight:900;
-      font-size:22px;
+      color:#111827;
       line-height:1.05;
-      letter-spacing:.2px;
-      width:190px;
-      max-width:68%;
+      font-size:18px;
+      max-width:70%;
     }
-    .pillTitle small{
-      display:block;
-      font-size:22px;
-      font-weight:900;
+    .titlePill .stack{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
     }
 
-    .stoneMini{
-      width:56px;
-      height:56px;
+    /* Stone icon (right) */
+    .stoneIcon{
+      width:64px;height:64px;
       object-fit:contain;
       flex:0 0 auto;
       margin-top:2px;
     }
 
-    /* schedule box */
-    .schedBox{
-      border:3px solid var(--accent);
-      border-radius:18px;
+    /* Bullet box like sample */
+    .bulletBox{
+      border-radius:16px;
+      border:2px solid rgba(var(--accent-rgb), 1);
       padding:12px 14px;
       background:#fff;
-      min-height:190px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      box-shadow:0 10px 24px rgba(15,23,42,.05);
+      margin-top:auto;
     }
-    .schedTitle{
-      font-weight:900;
-      font-size:14px;
-      color:var(--ink);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .schedHint{
-      color:var(--muted);
-      font-size:12px;
-      margin-top:-6px;
-    }
-    .schedList{
+    .bulletBox ul{
       margin:0;
       padding-left:18px;
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-    .schedList li{
-      color:var(--ink);
+    .bulletBox li{
+      color:#0f172a;
       font-size:14px;
-      line-height:1.2;
+      line-height:1.25;
     }
-    .schedList b{font-weight:900}
-
-    .topicLink{color:inherit;text-decoration:none;border-bottom:1px solid rgba(17,24,39,.35)}
-  .topicLink:hover{border-bottom-color:var(--accent)}
-
-  /* booking button */
-    .bookBtn{
-      margin-top:auto;
-      width:100%;
-      border:0;
-      border-radius:16px;
-      padding:12px 14px;
-      font-weight:900;
-      font-size:14px;
-      cursor:pointer;
-      background:var(--accent);
-      color:#fff;
-      box-shadow:0 14px 32px rgba(17,24,39,.12);
-    }
-    .bookBtn:hover{filter:brightness(.98)}
-    .bookBtn:active{transform:translateY(1px)}
-
-    /* Make card compact on small phones */
-    @media (max-width: 420px){
-      .roomCard{padding:16px;min-height:320px}
-      .pillTitle{font-size:20px;padding:9px 10px;border-radius:14px}
-      .stoneMini{width:50px;height:50px}
-      .schedBox{min-height:175px}
+    .bulletBox b{
+      font-weight:950;
     }
 
-    /* ===== Modal (keep logic, just theme) ===== */
+    /* Keep existing modal styles (unchanged) */
     .modalOverlay{
       position:fixed;inset:0;
       background:rgba(2,6,23,.42);
@@ -217,25 +207,25 @@
     .modal{
       width:min(980px, 100%);
       background:#ffffff;
-      border:1px solid rgba(17,24,39,.18);
+      border:1px solid rgba(15,23,42,.14);
       border-radius:22px;
-      box-shadow:0 40px 120px rgba(17,24,39,.28);
+      box-shadow:0 40px 120px rgba(15,23,42,.28);
       overflow:hidden;
     }
     .modalHeader{
       display:flex;align-items:center;justify-content:space-between;gap:10px;
-      padding:14px 16px;border-bottom:1px solid rgba(17,24,39,.10);
+      padding:14px 16px;border-bottom:1px solid rgba(15,23,42,.10);
       background:#fbfcff;
     }
     .modalTitle{font-weight:900;color:var(--ink)}
     .modalBody{padding:14px 16px}
     .modalFooter{
-      padding:14px 16px;border-top:1px solid rgba(17,24,39,.10);
+      padding:14px 16px;border-top:1px solid rgba(15,23,42,.10);
       display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
       background:#fbfcff;
     }
     .xbtn{
-      border:1px solid rgba(17,24,39,.12);
+      border:1px solid rgba(15,23,42,.12);
       background:#fff;
       color:var(--ink);
       border-radius:14px;
@@ -252,7 +242,7 @@
     input,select,textarea{
       width:100%;
       padding:10px 10px;
-      border:1px solid rgba(17,24,39,.18);
+      border:1px solid rgba(15,23,42,.12);
       border-radius:14px;
       font-size:14px;
       outline:none;
@@ -270,20 +260,20 @@
       padding:10px 14px;
       cursor:pointer;
       font-weight:900;
-      background:#2563eb;
+      background:var(--primary);
       color:white;
     }
-    .btn:hover{background:#1d4ed8}
+    .btn:hover{background:var(--primary2)}
     .btn.ghost{
       background:#ffffff;
-      border:1px solid rgba(17,24,39,.18);
+      border:1px solid rgba(15,23,42,.14);
       color:var(--ink);
     }
     .btn.ghost:hover{background:#f3f6ff}
-    .btn.danger{ background:#dc2626; }
+    .btn.danger{ background:var(--danger); }
 
     .list{
-      border:1px solid rgba(17,24,39,.16);
+      border:1px solid rgba(15,23,42,.12);
       border-radius:18px;
       overflow:hidden;
       background:#fff;
@@ -300,10 +290,10 @@
       color:var(--muted);
       font-size:12px;
       font-weight:800;
-      border-bottom:1px solid rgba(17,24,39,.10);
+      border-bottom:1px solid rgba(15,23,42,.10);
     }
     .listRow{
-      border-bottom:1px solid rgba(17,24,39,.08);
+      border-bottom:1px solid rgba(15,23,42,.08);
       font-size:13px;
       color:var(--ink);
       background:#fff;
@@ -314,8 +304,8 @@
       display:inline-flex;align-items:center;gap:8px;
       padding:6px 10px;
       border-radius:999px;
-      border:1px solid rgba(17,24,39,.18);
-      background:rgba(17,24,39,.03);
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(15,23,42,.03);
       font-size:12px;
       color:var(--muted);
       max-width:100%;
@@ -326,7 +316,7 @@
 
     .chips{
       display:flex;flex-wrap:wrap;gap:8px;
-      border:1px solid rgba(17,24,39,.18);
+      border:1px solid rgba(15,23,42,.12);
       border-radius:16px;
       padding:10px;
       background:#ffffff;
@@ -344,25 +334,44 @@
     .chip .x{
       width:18px;height:18px;border-radius:999px;
       display:inline-flex;align-items:center;justify-content:center;
-      border:1px solid rgba(17,24,39,.18);
+      border:1px solid rgba(15,23,42,.14);
       cursor:pointer;
       user-select:none;
       background:#fff;
     }
     .chip .x:hover{background:#eef2ff}
 
-    /* Logs hidden by default (still works in background) */
-    pre{display:none}
-  </style>
+    pre{
+      margin:12px 0 0;
+      background:#ffffff;
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:16px;
+      padding:12px;
+      color:#0f172a;
+      overflow:auto;
+      min-height:120px;
+      font-size:12px;
+      box-shadow:0 10px 26px rgba(15,23,42,.06);
+    }
 
+    /* Hide debug log by default */
+    #log{display:none;}
+  </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="top">
-      <div class="brand">
-        <img class="logo" src="MLS Logo.png" alt="MapPointAsia Logistics Solutions">
+      <div class="brandRow" aria-label="Brand">
+        <!-- ✅ ใส่โลโก้ของจริง: เปลี่ยน src ตามไฟล์จริง -->
+        <img class="brandLogo" id="brandLogo" src="logo.png" alt="MapPointAsia Logo"
+             onerror="this.style.display='none'">
+        <div class="brandText">
+          <div class="t1">MappointAsia</div>
+          <div class="t2">Logistics Solutions</div>
+        </div>
       </div>
+
       <div class="badge">
         <span class="dot no" id="statusDot"></span>
         <span id="statusText">Loading…</span>
@@ -421,19 +430,14 @@
       <div class="modalHeader">
         <div>
           <div class="modalTitle" id="mBookTitle">จองห้อง</div>
-
-    <div class="top">
-      <div class="brand">
-        <img class="logo" src="MLS Logo.png" alt="MapPointAsia Logistics Solutions">
+          <div class="hint" id="mBookRoomHint">-</div>
+        </div>
+        <button class="xbtn" id="mBookClose">✕</button>
       </div>
-      <div class="badge">
-        <span class="dot no" id="statusDot"></span>
-        <span id="statusText">Loading…</span>
-      </div>
-    </div>
-
-    <div class="rooms" id="rooms"></div>
-ว/ดด/ปี ค.ศ.)</label>
+      <div class="modalBody">
+        <div class="grid2">
+          <div>
+            <label>วันที่ (วว/ดด/ปี ค.ศ.)</label>
             <input type="date" id="bkDate">
           </div>
           <div>
@@ -739,61 +743,21 @@
     });
   }
 
-  // ====== UI render: Rooms (UI only) ======
-  // NOTE: คุณต้องมีไฟล์รูปตาม path นี้ใน GitHub Pages repo
+  // ====== UI render: Rooms (UPDATED to match your sample) ======
+  // NOTE: ต้องมีไฟล์รูปตาม path นี้ใน repo (หรือแก้ path ให้ตรง)
   const ROOMS = [
-    {
-      key:"mind",
-      name:"Mind Room",
-      stone:"Mind.png",
-      accent:"#f59e0b",
-      uiTitle:["The Mind","Stone"],
-      topics:[
-        { title:"ประชุมทีม Server", time:"09:00–10:00" },
-        { title:"Human Resource & General Administration", time:"10:30–11:30" },
-        { title:"Project Implementation and Customer Support", time:"13:30–14:30" },
-        { title:"Distributor and DLT Coordinator", time:"15:00–16:00" }
-      ]
-    },
-    {
-      key:"reality",
-      name:"Reality Room",
-      stone:"Reality.png",
-      accent:"#ef4444",
-      uiTitle:["The Reality","Stone"],
-      topics:[
-        { title:"ประชุมทีม Server", time:"09:00–10:00" },
-        { title:"Human Resource & General Administration", time:"10:30–11:30" },
-        { title:"Project Implementation and Customer Support", time:"13:30–14:30" },
-        { title:"Distributor and DLT Coordinator", time:"15:00–16:00" }
-      ]
-    },
-    {
-      key:"power",
-      name:"Power Room",
-      stone:"Power.png",
-      accent:"#7c3aed",
-      uiTitle:["The Power","Stone"],
-      topics:[
-        { title:"ประชุมทีม Server", time:"09:00–10:00" },
-        { title:"Human Resource & General Administration", time:"10:30–11:30" },
-        { title:"Project Implementation and Customer Support", time:"13:30–14:30" },
-        { title:"Distributor and DLT Coordinator", time:"15:00–16:00" }
-      ]
-    },
-    {
-      key:"space",
-      name:"Space Room",
-      stone:"Space.png",
-      accent:"#3b82f6",
-      uiTitle:["The Space","Stone"],
-      topics:[
-        { title:"ประชุมทีม Server", time:"09:00–10:00" },
-        { title:"Human Resource & General Administration", time:"10:30–11:30" },
-        { title:"Project Implementation and Customer Support", time:"13:30–14:30" },
-        { title:"Distributor and DLT Coordinator", time:"15:00–16:00" }
-      ]
-    }
+    { key:"mind",    titleA:"The Mind",    titleB:"Stone", stone:"Mind.png",    accentRgb:"245, 158, 11" }, // amber
+    { key:"reality", titleA:"The Mind",    titleB:"Stone", stone:"Reality.png", accentRgb:"239, 68, 68" },  // red
+    { key:"power",   titleA:"The Power",   titleB:"Stone", stone:"Power.png",   accentRgb:"168, 85, 247" }, // purple
+    { key:"space",   titleA:"The Space",   titleB:"Stone", stone:"Space.png",   accentRgb:"59, 130, 246" }  // blue
+  ];
+
+  // sample bullets (เหมือนภาพตัวอย่าง) — ภายหลังคุณจะดึงจาก booking จริงก็ได้
+  const SAMPLE_TOPICS = [
+    "ประชุมทีม Server",
+    "ประชุมทีม Human Resource & General Administration",
+    "ประชุมทีม Project Implementation and Customer Support",
+    "Distributor and DLT Coordinator"
   ];
 
   function renderRooms(){
@@ -801,62 +765,30 @@
     ROOMS.forEach(r => {
       const div = document.createElement("div");
       div.className = "roomCard";
-      div.style.setProperty("--accent", r.accent);
+      div.style.setProperty("--accent-rgb", r.accentRgb);
 
-      const topicsHtml = (r.topics || []).map((t, i) => {
-        const safeTitle = escapeHtml(t.title);
-        const safeTime = escapeHtml(t.time || "");
-        return `
-          <li>
-            <b>หัวข้อ:</b>
-            <a href="#" class="topicLink" data-room="${escapeHtml(r.key)}" data-title="${safeTitle}" data-time="${safeTime}">
-              ${safeTitle}
-            </a>
-          </li>`;
-      }).join("");
+      const bullets = SAMPLE_TOPICS.map(t => `<li><b>หัวข้อ :</b> ${escapeHtml(t)}</li>`).join("");
 
       div.innerHTML = `
-        <div class="cardHead">
-          <div class="pillTitle">
-            ${escapeHtml(r.uiTitle?.[0] || r.name)}<br>
-            <small>${escapeHtml(r.uiTitle?.[1] || "")}</small>
+        <div class="tileInner">
+          <div class="tileTop">
+            <div class="titlePill">
+              <div class="stack">
+                <span>${escapeHtml(r.titleA)}</span>
+                <span>${escapeHtml(r.titleB)}</span>
+              </div>
+            </div>
+            <img class="stoneIcon" src="${escapeHtml(r.stone)}" alt="${escapeHtml(r.key)}"
+                 onerror="this.style.opacity='.35'">
           </div>
-          <img class="stoneMini" src="${escapeHtml(r.stone)}" alt="${escapeHtml(r.name)}">
-        </div>
 
-        <div class="schedBox" aria-label="schedule">
-          <div class="schedTitle">
-            <span>หัวข้อตัวอย่าง (ลิ้งค์ไปจอง)</span>
-            <span class="pill">${escapeHtml(r.name)}</span>
+          <div class="bulletBox">
+            <ul>${bullets}</ul>
           </div>
-          <div class="schedHint">กดหัวข้อเพื่อเปิด popup จองห้องนี้ (UI เท่านั้น)</div>
-          <ul class="schedList">
-            ${topicsHtml}
-          </ul>
         </div>
-
-        <button class="bookBtn" type="button" data-room="${escapeHtml(r.key)}">จองห้องประชุม</button>
       `;
 
-      // click card -> open room status (ของเดิม)
-      div.addEventListener("click", () => openRoomStatus(r.key, r.name));
-
-      // prevent card click when pressing button/link
-      div.querySelector(".bookBtn").addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openBookingForRoom(r.key, r.name, {});
-      });
-
-      div.querySelectorAll(".topicLink").forEach(a => {
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const presetTitle = a.dataset.title || "";
-          openBookingForRoom(r.key, r.name, { title: presetTitle });
-        });
-      });
-
+      div.addEventListener("click", () => openRoomStatus(r.key, `${r.titleA} ${r.titleB}`));
       roomsEl.appendChild(div);
     });
   }
@@ -908,24 +840,7 @@
     });
   }
 
-  
-  // ====== Open booking from a specific room (UI helper; no backend logic change) ======
-  function openBookingForRoom(roomKey, roomName, preset){
-    state.roomKey = roomKey;
-    state.roomName = roomName;
-
-    // Open booking modal with default values
-    openBookingModal();
-
-    // Apply preset (e.g., title from topic link)
-    if (preset && preset.title){
-      state.booking.title = String(preset.title).trim();
-      pillDetails.textContent = `หัวข้อ: ${state.booking.title || "ยังไม่ระบุ"}`;
-      dtTitle.value = state.booking.title;
-    }
-  }
-
-// ====== Booking modal (main) ======
+  // ====== Booking modal (main) ======
   function resetBookingState(){
     state.booking = {
       roomKey: state.roomKey || "",
@@ -1273,21 +1188,7 @@
     ov.addEventListener("click", (e) => { if (e.target === ov) closeModal(ov); });
   });
 
-  // ✅ Render UI immediately so page is never blank, even if API is slow
-  try{
-    renderRooms();
-  }catch(e){
-    console.error("renderRooms failed", e);
-  }
-  setStatus(false, "Loading…");
-
-  // ✅ Start logic after DOM is ready (prevents race conditions on some mobile browsers)
-  window.addEventListener("DOMContentLoaded", () => {
-    init().catch(err => {
-      console.error(err);
-      try{ setStatus(false, "Load failed"); }catch(_){}
-    });
-  });
+  init();
 </script>
 </body>
 </html>
