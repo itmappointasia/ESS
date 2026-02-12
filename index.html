@@ -4,40 +4,49 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ESS - Meeting Rooms</title>
+
   <style>
     :root{
-      /* ✅ LIGHT THEME (White) */
-      --bg:#ffffff;
-      --card:#ffffff;
-      --card2:#f6f8fc;
+      --bg0:#f6f8ff;
+      --bg1:#ffffff;
 
-      --ink:#0f172a;        /* slate-900 */
-      --muted:#64748b;      /* slate-500 */
+      --card:#ffffff;
+      --ink:#0b1220;
+      --muted:#5b6b86;
       --line:rgba(15,23,42,.12);
 
       --primary:#2563eb;
       --primary2:#1d4ed8;
 
       --danger:#dc2626;
-      --warn:#d97706;
       --ok:#16a34a;
 
-      /* shadow lighter for white UI */
-      --shadow:0 18px 60px rgba(15,23,42,.10);
-      --r:18px;
+      --shadow:0 22px 70px rgba(15,23,42,.12);
+      --shadow2:0 10px 30px rgba(15,23,42,.08);
+
+      --r:22px;
+      --r2:18px;
     }
 
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      background: var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
       color:var(--ink);
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(37,99,235,.10), transparent 60%),
+        radial-gradient(900px 600px at 90% 10%, rgba(168,85,247,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
     }
 
-    .wrap{max-width:1100px;margin:0 auto;padding:34px 26px}
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:34px 24px 44px;
+    }
 
-    /* ===== Header (Logo like your sample) ===== */
+    /* ===== Header ===== */
     .top{
       display:flex;
       align-items:flex-start;
@@ -49,180 +58,251 @@
       display:flex;
       align-items:flex-start;
       gap:14px;
+      min-width: 320px;
     }
     .brandLogo{
-      width:64px;height:64px;object-fit:contain;
-      border-radius:14px;
+      width:56px;height:56px;
+      object-fit:contain;
+      border-radius:16px;
       background:#fff;
+      box-shadow:0 10px 28px rgba(15,23,42,.10);
+      border:1px solid rgba(15,23,42,.08);
     }
-    .brandText{
-      display:flex;
-      flex-direction:column;
-      line-height:1.05;
-      padding-top:2px;
-    }
+    .brandText{line-height:1.06}
     .brandText .t1{
       font-weight:950;
       font-size:34px;
       letter-spacing:.2px;
-      color:#0f172a;
     }
     .brandText .t2{
-      font-weight:650;
-      font-size:26px;
-      color:rgba(15,23,42,.72);
-      letter-spacing:.2px;
+      font-weight:750;
+      font-size:22px;
+      color:rgba(11,18,32,.72);
       margin-top:4px;
+      letter-spacing:.2px;
     }
 
-    .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;
-      font-size:12px;color:var(--muted);
-      box-shadow:0 6px 18px rgba(15,23,42,.06);
-      margin-top:8px;
-      flex:0 0 auto;
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow:0 10px 28px rgba(15,23,42,.10);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size:13px;
+      color:var(--muted);
+      white-space:nowrap;
+      margin-top:6px;
     }
-    .dot{width:9px;height:9px;border-radius:50%}
+    .dot{width:10px;height:10px;border-radius:50%}
     .dot.ok{background:var(--ok)}
     .dot.no{background:var(--danger)}
 
-    /* ===== Rooms grid: 2x2 like sample ===== */
+    /* ===== Grid ===== */
     .rooms{
       display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:36px 46px;
-      align-items:stretch;
-      margin-top:8px;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:28px 28px;
     }
     @media (max-width: 980px){
-      .wrap{padding:22px 16px}
-      .rooms{gap:22px 18px}
+      .wrap{padding:22px 14px 30px}
       .brandText .t1{font-size:28px}
-      .brandText .t2{font-size:20px}
+      .brandText .t2{font-size:18px}
+      .rooms{gap:18px}
     }
-    @media (max-width: 720px){
+    @media (max-width: 740px){
       .top{flex-direction:column;align-items:flex-start}
-      .badge{margin-top:0}
       .rooms{grid-template-columns:1fr}
+      .statusPill{margin-top:0}
     }
 
-    /* ===== Card style to match sample ===== */
+    /* ===== Room Cards (premium) ===== */
     .roomCard{
       position:relative;
-      background:#fff;
-      border-radius:22px;
-      cursor:pointer;
-      padding:16px;
-      transition:.16s ease;
-      box-shadow:0 14px 44px rgba(15,23,42,.07);
+      background:rgba(255,255,255,.82);
+      border-radius:var(--r);
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow:var(--shadow);
       overflow:hidden;
-      border:2.5px solid rgba(var(--accent-rgb), 1);   /* outer border color */
-      min-height:330px;
+      cursor:pointer;
+      transition: transform .16s ease, box-shadow .16s ease;
+      isolation:isolate;
     }
-    .roomCard:hover{transform:translateY(-2px)}
-
-    .tileInner{
-      border-radius:18px;
-      height:100%;
-      padding:14px;
-      background:#fff;
-      border:2px solid rgba(var(--accent-rgb), 1);     /* inner border color */
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    .roomCard:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 28px 90px rgba(15,23,42,.16);
     }
 
-    .tileTop{
+    /* soft accent glow */
+    .roomCard::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(500px 240px at 20% 10%, rgba(var(--accent-rgb), .18), transparent 60%),
+        radial-gradient(420px 220px at 90% 0%, rgba(var(--accent-rgb), .12), transparent 55%);
+      z-index:-1;
+    }
+
+    .roomInner{
+      padding:18px 18px 16px;
+    }
+
+    .roomTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
+      margin-bottom:14px;
     }
 
-    /* Title pill (left) */
-    .titlePill{
-      display:inline-flex;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      border:2px solid rgba(var(--accent-rgb), 1);
-      background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.06);
-      font-weight:900;
-      color:#111827;
-      line-height:1.05;
-      font-size:18px;
-      max-width:70%;
-    }
-    .titlePill .stack{
+    .roomTitle{
       display:flex;
       flex-direction:column;
-      gap:2px;
+      gap:6px;
     }
 
-    /* Stone icon (right) */
-    .stoneIcon{
-      width:64px;height:64px;
-      object-fit:contain;
-      flex:0 0 auto;
-      margin-top:2px;
-    }
-
-    /* Bullet box like sample */
-    .bulletBox{
+    .chipTitle{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
       border-radius:16px;
-      border:2px solid rgba(var(--accent-rgb), 1);
-      padding:12px 14px;
       background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.05);
-      margin-top:auto;
+      border:1.5px solid rgba(var(--accent-rgb), .60);
+      box-shadow:var(--shadow2);
+      max-width: 260px;
     }
-    .bulletBox ul{
+    .chipTitle .stack{
+      display:flex; flex-direction:column;
+      line-height:1.05;
+    }
+    .chipTitle .a{
+      font-weight:950;
+      font-size:18px;
+      letter-spacing:.15px;
+    }
+    .chipTitle .b{
+      font-weight:950;
+      font-size:18px;
+      letter-spacing:.15px;
+    }
+
+    .miniMeta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:rgba(11,18,32,.68);
+      font-size:12px;
+      padding-left:4px;
+    }
+    .metaPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.74);
+      border:1px solid rgba(15,23,42,.10);
+    }
+    .swatch{
+      width:10px;height:10px;border-radius:50%;
+      background: rgba(var(--accent-rgb), 1);
+    }
+
+    .stoneIcon{
+      width:58px;height:58px;
+      object-fit:contain;
+      border-radius:16px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(15,23,42,.08);
+      box-shadow:0 10px 28px rgba(15,23,42,.10);
+      padding:6px;
+      flex:0 0 auto;
+    }
+
+    .topicBox{
+      background:#fff;
+      border:1.5px solid rgba(var(--accent-rgb), .50);
+      border-radius:var(--r2);
+      padding:12px 12px;
+      box-shadow:var(--shadow2);
+    }
+
+    .topicHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+    .topicHead .label{
+      font-weight:900;
+      font-size:12px;
+      color:rgba(11,18,32,.78);
+    }
+    .topicHead .count{
+      font-weight:900;
+      font-size:12px;
+      color:rgba(11,18,32,.62);
+    }
+
+    .topicList{
       margin:0;
       padding-left:18px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;
     }
-    .bulletBox li{
-      color:#0f172a;
-      font-size:14px;
+    .topicList li{
+      font-size:13px;
       line-height:1.25;
+      color:rgba(11,18,32,.90);
     }
-    .bulletBox b{
-      font-weight:950;
+    .topicList b{font-weight:950}
+
+    .topicEmpty{
+      font-size:13px;
+      color:rgba(11,18,32,.60);
+      padding:6px 2px;
     }
 
-    /* Keep existing modal styles (unchanged) */
+    /* ===== Modals (keep from your file, slight polish) ===== */
     .modalOverlay{
-      position:fixed;inset:0;
-      background:rgba(2,6,23,.42);
+      position:fixed; inset:0;
       display:none;
-      align-items:center;justify-content:center;
+      align-items:center; justify-content:center;
       padding:16px;
+      background:rgba(2,6,23,.48);
       z-index:50;
     }
     .modal{
       width:min(980px, 100%);
-      background:#ffffff;
+      background:rgba(255,255,255,.92);
       border:1px solid rgba(15,23,42,.14);
       border-radius:22px;
-      box-shadow:0 40px 120px rgba(15,23,42,.28);
+      box-shadow:0 40px 120px rgba(15,23,42,.32);
       overflow:hidden;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .modalHeader{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      padding:14px 16px;border-bottom:1px solid rgba(15,23,42,.10);
-      background:#fbfcff;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(15,23,42,.10);
+      background:rgba(255,255,255,.70);
     }
-    .modalTitle{font-weight:900;color:var(--ink)}
+    .modalTitle{font-weight:950}
+    .hint{font-size:12px;color:rgba(11,18,32,.62);margin-top:2px}
     .modalBody{padding:14px 16px}
     .modalFooter{
-      padding:14px 16px;border-top:1px solid rgba(15,23,42,.10);
-      display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
-      background:#fbfcff;
+      padding:14px 16px;
+      border-top:1px solid rgba(15,23,42,.10);
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+      background:rgba(255,255,255,.70);
     }
     .xbtn{
       border:1px solid rgba(15,23,42,.12);
@@ -231,7 +311,7 @@
       border-radius:14px;
       padding:8px 10px;
       cursor:pointer;
-      font-weight:900;
+      font-weight:950;
     }
     .xbtn:hover{background:#f3f6ff}
 
@@ -259,7 +339,7 @@
       appearance:none;border:0;border-radius:14px;
       padding:10px 14px;
       cursor:pointer;
-      font-weight:900;
+      font-weight:950;
       background:var(--primary);
       color:white;
     }
@@ -289,7 +369,7 @@
       background:#f7f9fd;
       color:var(--muted);
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       border-bottom:1px solid rgba(15,23,42,.10);
     }
     .listRow{
@@ -341,21 +421,7 @@
     }
     .chip .x:hover{background:#eef2ff}
 
-    pre{
-      margin:12px 0 0;
-      background:#ffffff;
-      border:1px solid rgba(15,23,42,.12);
-      border-radius:16px;
-      padding:12px;
-      color:#0f172a;
-      overflow:auto;
-      min-height:120px;
-      font-size:12px;
-      box-shadow:0 10px 26px rgba(15,23,42,.06);
-    }
-
-    /* Hide debug log by default */
-    #log{display:none;}
+    pre{display:none;} /* hide debug */
   </style>
 </head>
 
@@ -363,7 +429,6 @@
   <div class="wrap">
     <div class="top">
       <div class="brandRow" aria-label="Brand">
-        <!-- ✅ ใส่โลโก้ของจริง: เปลี่ยน src ตามไฟล์จริง -->
         <img class="brandLogo" id="brandLogo" src="MLS Logo.png" alt="MapPointAsia Logo"
              onerror="this.style.display='none'">
         <div class="brandText">
@@ -372,7 +437,7 @@
         </div>
       </div>
 
-      <div class="badge">
+      <div class="statusPill">
         <span class="dot no" id="statusDot"></span>
         <span id="statusText">Loading…</span>
       </div>
@@ -380,7 +445,7 @@
 
     <div class="rooms" id="rooms"></div>
 
-    <pre id="log" hidden></pre>
+    <pre id="log"></pre>
   </div>
 
   <!-- Modal: Room status -->
@@ -398,7 +463,7 @@
           <div>
             <label>เลือกวันที่</label>
             <input type="date" id="mRoomDate">
-            <div class="hint">แสดงเป็น วว/ดด/ปี(ค.ศ.) ใน UI และส่งเป็น YYYY-MM-DD</div>
+            <div class="hint">UI แสดงเป็น วัน/เดือน/ปี(ค.ศ.) และส่งเป็น YYYY-MM-DD</div>
           </div>
           <div style="display:flex;gap:10px;align-items:flex-end;justify-content:flex-end">
             <button class="btn ghost" id="mRoomRefresh">รีเฟรชรายการ</button>
@@ -579,6 +644,7 @@
     roomName: null,
     roomDate: null,
     roomBookings: [],
+    roomTopics: {}, // {roomKey: {date: 'YYYY-MM-DD', topics:[], count:number}}
     booking: {
       roomKey: "",
       date: "",
@@ -594,15 +660,14 @@
   };
 
   // ====== DOM ======
-  const logEl = document.getElementById("log");
-  const statusDot = document.getElementById("statusDot");
+  const statusDot  = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
-  const roomsEl = document.getElementById("rooms");
+  const roomsEl    = document.getElementById("rooms");
 
   const mRoom = document.getElementById("mRoom");
   const mRoomTitle = document.getElementById("mRoomTitle");
-  const mRoomDate = document.getElementById("mRoomDate");
-  const mRoomRows = document.getElementById("mRoomRows");
+  const mRoomDate  = document.getElementById("mRoomDate");
+  const mRoomRows  = document.getElementById("mRoomRows");
 
   const mBook = document.getElementById("mBook");
   const mBookTitle = document.getElementById("mBookTitle");
@@ -629,7 +694,7 @@
 
   // ====== Helpers ======
   const pad = (n) => String(n).padStart(2,"0");
-  const nowDateTH = () => {
+  const todayYYYYMMDD = () => {
     const d = new Date();
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   };
@@ -642,9 +707,6 @@
     statusDot.className = "dot " + (ok ? "ok" : "no");
     statusText.textContent = text;
   }
-  function log(msg){ logEl.textContent += msg + "\n"; }
-  function clearLog(){ logEl.textContent = ""; }
-  function clearBkLog(){ bkLog.textContent = ""; }
   function escapeHtml(s){
     return String(s||"").replace(/[&<>"']/g, m => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -742,48 +804,70 @@
       jsonpCall({ action:"createmeeting", apiKey:API_KEY, ...payload }, resolve);
     });
   }
+  // ✅ NEW: pull topics from Sheet "Bookings" (backend must implement)
+  function apiRoomTopics(roomKey, dateYYYYMMDD, limit=4){
+    return new Promise((resolve) => {
+      jsonpCall({ action:"roomtopics", apiKey:API_KEY, roomKey, date: dateYYYYMMDD, limit }, resolve);
+    });
+  }
 
-  // ====== UI render: Rooms (UPDATED to match your sample) ======
-  // NOTE: ต้องมีไฟล์รูปตาม path นี้ใน repo (หรือแก้ path ให้ตรง)
+  // ====== Rooms config ======
   const ROOMS = [
-    { key:"mind",    titleA:"The Mind",    titleB:"Stone", stone:"Mind.png",    accentRgb:"245, 158, 11" }, // amber
-    { key:"reality", titleA:"The Mind",    titleB:"Stone", stone:"Reality.png", accentRgb:"239, 68, 68" },  // red
-    { key:"power",   titleA:"The Power",   titleB:"Stone", stone:"Power.png",   accentRgb:"168, 85, 247" }, // purple
-    { key:"space",   titleA:"The Space",   titleB:"Stone", stone:"Space.png",   accentRgb:"59, 130, 246" }  // blue
-  ];
-
-  // sample bullets (เหมือนภาพตัวอย่าง) — ภายหลังคุณจะดึงจาก booking จริงก็ได้
-  const SAMPLE_TOPICS = [
-    "ประชุมทีม Server",
-    "ประชุมทีม Human Resource & General Administration",
-    "ประชุมทีม Project Implementation and Customer Support",
-    "Distributor and DLT Coordinator"
+    { key:"mind",    titleA:"The Mind",  titleB:"Stone", stone:"Mind.png",    accentRgb:"245, 158, 11" }, // amber
+    { key:"reality", titleA:"Reality",   titleB:"Stone", stone:"Reality.png", accentRgb:"239, 68, 68" },  // red
+    { key:"power",   titleA:"The Power", titleB:"Stone", stone:"Power.png",   accentRgb:"168, 85, 247" }, // purple
+    { key:"space",   titleA:"The Space", titleB:"Stone", stone:"Space.png",   accentRgb:"59, 130, 246" }  // blue
   ];
 
   function renderRooms(){
+    const date = todayYYYYMMDD();
     roomsEl.innerHTML = "";
+
     ROOMS.forEach(r => {
       const div = document.createElement("div");
       div.className = "roomCard";
       div.style.setProperty("--accent-rgb", r.accentRgb);
 
-      const bullets = SAMPLE_TOPICS.map(t => `<li><b>หัวข้อ :</b> ${escapeHtml(t)}</li>`).join("");
+      const info = state.roomTopics[r.key];
+      const topics = info?.date === date ? (info.topics || []) : [];
+      const total = info?.date === date ? (info.count ?? topics.length) : null;
+
+      const listHtml = topics.length
+        ? `<ul class="topicList">${
+            topics.map(t => `<li><b>หัวข้อ :</b> ${escapeHtml(t)}</li>`).join("")
+          }</ul>`
+        : `<div class="topicEmpty">ยังไม่มีรายการจองของวันนี้</div>`;
+
+      const countLabel = (total === null)
+        ? `—`
+        : `${total} รายการ`;
 
       div.innerHTML = `
-        <div class="tileInner">
-          <div class="tileTop">
-            <div class="titlePill">
-              <div class="stack">
-                <span>${escapeHtml(r.titleA)}</span>
-                <span>${escapeHtml(r.titleB)}</span>
+        <div class="roomInner">
+          <div class="roomTop">
+            <div class="roomTitle">
+              <div class="chipTitle">
+                <div class="stack">
+                  <div class="a">${escapeHtml(r.titleA)}</div>
+                  <div class="b">${escapeHtml(r.titleB)}</div>
+                </div>
+              </div>
+              <div class="miniMeta">
+                <span class="metaPill"><span class="swatch"></span> Today</span>
+                <span class="metaPill">${escapeHtml(date)}</span>
               </div>
             </div>
+
             <img class="stoneIcon" src="${escapeHtml(r.stone)}" alt="${escapeHtml(r.key)}"
-                 onerror="this.style.opacity='.35'">
+              onerror="this.style.opacity='.35'">
           </div>
 
-          <div class="bulletBox">
-            <ul>${bullets}</ul>
+          <div class="topicBox">
+            <div class="topicHead">
+              <div class="label">รายการหัวข้อ (จาก Sheet: Bookings)</div>
+              <div class="count">${countLabel}</div>
+            </div>
+            ${listHtml}
           </div>
         </div>
       `;
@@ -793,12 +877,54 @@
     });
   }
 
+  async function refreshAllRoomTopics(){
+    const date = todayYYYYMMDD();
+
+    // render skeleton first
+    ROOMS.forEach(r => {
+      state.roomTopics[r.key] = { date, topics: [], count: null };
+    });
+    renderRooms();
+
+    // load in parallel
+    const jobs = ROOMS.map(async (r) => {
+      const res = await apiRoomTopics(r.key, date, 4);
+
+      if (res && res.ok){
+        state.roomTopics[r.key] = {
+          date,
+          topics: Array.isArray(res.topics) ? res.topics : [],
+          count: Number.isFinite(res.count) ? res.count : (Array.isArray(res.topics) ? res.topics.length : 0)
+        };
+        return;
+      }
+
+      // fallback: if your backend hasn't deployed roomtopics yet,
+      // try using apiBookings and derive titles from returned items (not sheet-based).
+      const fallback = await apiBookings(r.key, date);
+      const items = (fallback && fallback.ok && Array.isArray(fallback.items)) ? fallback.items : [];
+      const titles = [];
+      const seen = new Set();
+      items.forEach(it => {
+        const t = String(it.title || "").trim();
+        if (t && !seen.has(t)){
+          seen.add(t);
+          titles.push(t);
+        }
+      });
+      state.roomTopics[r.key] = { date, topics: titles.slice(0,4), count: titles.length };
+    });
+
+    await Promise.all(jobs);
+    renderRooms();
+  }
+
   // ====== Room Status modal ======
   async function openRoomStatus(roomKey, roomName){
     state.roomKey = roomKey;
     state.roomName = roomName;
     mRoomTitle.textContent = `${roomName} — สถานะการจอง`;
-    mRoomDate.value = nowDateTH();
+    mRoomDate.value = todayYYYYMMDD();
     state.roomDate = mRoomDate.value;
 
     openModal(mRoom);
@@ -807,7 +933,7 @@
 
   async function refreshRoomBookings(){
     const roomKey = state.roomKey;
-    const date = mRoomDate.value || nowDateTH();
+    const date = mRoomDate.value || todayYYYYMMDD();
     state.roomDate = date;
 
     mRoomRows.innerHTML = `<div class="listRow"><div class="pill">กำลังโหลด…</div><div></div><div></div><div></div></div>`;
@@ -840,7 +966,7 @@
     });
   }
 
-  // ====== Booking modal (main) ======
+  // ====== Booking modal ======
   function resetBookingState(){
     state.booking = {
       roomKey: state.roomKey || "",
@@ -905,7 +1031,6 @@
     mBookTitle.textContent = "จองห้องประชุม";
     mBookRoomHint.textContent = `ห้อง: ${state.roomName} (${state.roomKey})`;
 
-    clearBkLog();
     openModal(mBook);
   }
 
@@ -1066,8 +1191,6 @@
 
   // ====== Save booking ======
   async function saveBooking(){
-    clearBkLog();
-
     const date = bkDate.value || "";
     const start = bkStart.value;
     const end = bkEnd.value;
@@ -1077,22 +1200,20 @@
     const title = (state.booking.title || "").trim();
     const desc = (state.booking.desc || "").trim();
 
-    if (!date){ bkLog.textContent += "ERROR: ต้องเลือกวันที่\n"; alert("ต้องเลือกวันที่"); return; }
-    if (!start || !end){ bkLog.textContent += "ERROR: ต้องเลือกเวลา\n"; alert("ต้องเลือกเวลา"); return; }
-    if (!dept){ bkLog.textContent += "ERROR: ต้องเลือกแผนก\n"; alert("ต้องเลือกแผนก"); return; }
-    if (!bookerEmail || !isValidEmail(bookerEmail)){ bkLog.textContent += "ERROR: ต้องเลือกชื่อผู้จองเพื่อได้อีเมล\n"; alert("ต้องเลือกชื่อผู้จอง"); return; }
-    if (!title){ bkLog.textContent += "ERROR: ต้องใส่หัวข้อการประชุม (required)\n"; alert("ต้องใส่หัวข้อการประชุม"); return; }
+    if (!date){ alert("ต้องเลือกวันที่"); return; }
+    if (!start || !end){ alert("ต้องเลือกเวลา"); return; }
+    if (!dept){ alert("ต้องเลือกแผนก"); return; }
+    if (!bookerEmail || !isValidEmail(bookerEmail)){ alert("ต้องเลือกชื่อผู้จอง"); return; }
+    if (!title){ alert("ต้องใส่หัวข้อการประชุม"); return; }
 
     const startISO = makeISO(date, start);
     const endISO = makeISO(date, end);
 
     if (new Date(endISO).getTime() <= new Date(startISO).getTime()){
-      bkLog.textContent += "ERROR: เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม\n";
       alert("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม");
       return;
     }
     if (isPast(startISO)){
-      bkLog.textContent += "ERROR: ห้ามจองเวลาที่ผ่านมาแล้ว\n";
       alert("ห้ามจองเวลาที่ผ่านมาแล้ว");
       return;
     }
@@ -1111,33 +1232,30 @@
       bookerEmail
     };
 
-    bkLog.textContent += "REQUEST:\n" + JSON.stringify(payload, null, 2) + "\n";
-
     const res = await apiCreateMeeting(payload);
-
-    bkLog.textContent += "RESPONSE:\n" + JSON.stringify(res, null, 2) + "\n";
 
     if (res && res.ok){
       alert("บันทึกการจองเรียบร้อย");
       closeModal(mBook);
+
+      // refresh modal list
       await refreshRoomBookings();
+
+      // refresh home topics (because bookings changed)
+      await refreshAllRoomTopics();
     } else {
       alert("บันทึกล้มเหลว: " + (res?.error || "unknown"));
     }
   }
 
-  // ====== Init: load employees ======
+  // ====== Init ======
   async function init(){
-    clearLog();
-    renderRooms();
-
     setStatus(false, "Loading employees…");
-    log("Loading employees…");
-    const res = await apiEmployees();
+    renderRooms(); // skeleton
 
+    const res = await apiEmployees();
     if (!res || !res.ok || !Array.isArray(res.employees)){
       setStatus(false, "Employees load failed");
-      log("Employees load failed: " + JSON.stringify(res));
       return;
     }
 
@@ -1154,8 +1272,9 @@
     state.departments = Array.from(deps).sort((a,b)=>a.localeCompare(b));
 
     setStatus(true, `Ready (${state.employees.length} employees)`);
-    log(`Employees loaded: ${state.employees.length}`);
-    log(`Departments: ${state.departments.length}`);
+
+    // ✅ pull topics from Sheet Bookings for today (per room)
+    await refreshAllRoomTopics();
   }
 
   // ====== Event wiring ======
