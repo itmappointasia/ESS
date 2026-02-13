@@ -1,1200 +1,1005 @@
 <!doctype html>
 <html lang="th" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Meeting Room Booking</title>
+
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/_sdk/data_sdk.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     * { font-family: 'Kanit', sans-serif; }
-    .room-mind { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .room-reality { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-    .room-power { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .room-space { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-    .room-mind-light { background: rgba(102, 126, 234, 0.15); border-left: 3px solid #667eea; }
-    .room-reality-light { background: rgba(240, 147, 251, 0.15); border-left: 3px solid #f093fb; }
-    .room-power-light { background: rgba(79, 172, 254, 0.15); border-left: 3px solid #4facfe; }
-    .room-space-light { background: rgba(67, 233, 123, 0.15); border-left: 3px solid #43e97b; }
+    .room-mind { background: linear-gradient(135deg, #F5D547 0%, #FFD700 100%); }
+    .room-reality { background: linear-gradient(135deg, #FF2D55 0%, #FF1744 100%); }
+    .room-power { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); }
+    .room-space { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
+    .room-mind-light { background: rgba(245, 213, 71, 0.15); border-left: 3px solid #F5D547; }
+    .room-reality-light { background: rgba(255, 45, 85, 0.15); border-left: 3px solid #FF2D55; }
+    .room-power-light { background: rgba(156, 39, 176, 0.15); border-left: 3px solid #9C27B0; }
+    .room-space-light { background: rgba(33, 150, 243, 0.15); border-left: 3px solid #2196F3; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-    .time-slot:hover { background: rgba(102, 126, 234, 0.1); }
+    .time-slot:hover { background: rgba(245, 213, 71, 0.1); }
     .booking-card { transition: all 0.2s ease; }
     .booking-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .modal-overlay { backdrop-filter: blur(4px); }
-    .date-picker-day {
-      padding: 0.5rem;
-      text-align: center;
-      font-size: 0.875rem;
-      cursor: pointer;
-      border-radius: 0.5rem;
-      transition: all 0.2s;
+    .date-picker-day{
+      padding: 0.5rem; text-align: center; font-size: 0.875rem;
+      cursor: pointer; border-radius: 0.5rem; transition: all 0.2s;
       border: 1px solid transparent;
     }
-    .date-picker-day:hover { background: rgba(102, 126, 234, 0.1); }
+    .date-picker-day:hover { background: rgba(245, 213, 71, 0.1); }
     .date-picker-day.other-month { color: #cbd5e1; }
-    .date-picker-day.selected { background: #667eea; color: white; font-weight: 600; }
-    .date-picker-day.today { border: 2px solid #667eea; }
+    .date-picker-day.selected { background: #F5D547; color: white; font-weight: 600; }
+    .date-picker-day.today { border: 2px solid #F5D547; }
     .date-picker-day.disabled { color: #cbd5e1; cursor: not-allowed; }
-    .pulse-dot { animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
     .slide-in { animation: slideIn 0.3s ease; }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes slideIn { from { opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
   </style>
-  <style>body { box-sizing: border-box; }</style>
- </head>
- <body class="h-full bg-slate-50 overflow-auto">
-  <div id="app" class="h-full w-full flex flex-col"><!-- Header -->
-   <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
-    <div class="flex items-center gap-3">
-     <div class="w-10 h-10 room-mind rounded-xl flex items-center justify-center">
-      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-     </div>
-     <div>
-      <h1 id="app-title" class="text-xl font-semibold text-slate-800">Meeting Room Booking</h1>
-      <p class="text-xs text-slate-500">ระบบจองห้องประชุม</p>
-     </div>
-    </div><button onclick="openBookingModal()" class="room-mind text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition">
-     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-     </svg> จองห้องประชุม </button>
-   </header><!-- Navigation -->
-   <div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
-    <div class="flex items-center gap-2"><button onclick="navigateMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg transition">
-      <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg></button> <button onclick="goToToday()" class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition">วันนี้</button> <button onclick="navigateMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg transition">
-      <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg></button>
-     <h2 id="current-month" class="text-lg font-semibold text-slate-800 ml-2"></h2>
-    </div>
-    <div class="flex items-center gap-2"><select id="view-mode" onchange="changeView(this.value)" class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"> <option value="month">มุมมองเดือน</option> <option value="week">มุมมองสัปดาห์</option> <option value="day">มุมมองวัน</option> </select> <select id="room-filter" onchange="filterByRoom(this.value)" class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"> <option value="all">ทุกห้อง</option> <option value="Mind Room">🟣 Mind Room</option> <option value="Reality Room">🔴 Reality Room</option> <option value="Power Room">🔵 Power Room</option> <option value="Space Room">🟢 Space Room</option> </select>
-    </div>
-   </div><!-- Room Legend -->
-   <div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center gap-4 flex-shrink-0 overflow-x-auto"><span class="text-sm text-slate-500 flex-shrink-0">ห้องประชุม:</span>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-mind"></span> <span class="text-sm text-slate-700">Mind Room</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-reality"></span> <span class="text-sm text-slate-700">Reality Room</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-power"></span> <span class="text-sm text-slate-700">Power Room</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-space"></span> <span class="text-sm text-slate-700">Space Room</span>
-    </div>
-   </div><!-- Calendar Container -->
-   <div id="calendar-container" class="flex-1 overflow-auto p-4"><!-- Calendar will be rendered here -->
-   </div>
-  </div><!-- Booking Modal -->
-  <div id="booking-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-4">
-   <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90%] overflow-y-auto slide-in">
-    <div class="p-6 border-b border-slate-200">
-     <div class="flex items-center justify-between">
-      <h3 id="modal-title" class="text-xl font-semibold text-slate-800">จองห้องประชุม</h3><button onclick="closeBookingModal()" class="p-2 hover:bg-slate-100 rounded-lg transition">
-       <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-       </svg></button>
-     </div>
-    </div>
-    <form id="booking-form" class="p-6 space-y-4"><input type="hidden" id="booking-id"> <input type="hidden" id="recurrence-group-id">
-     <div><label class="block text-sm font-medium text-slate-700 mb-1">หัวข้อการประชุม *</label> <input type="text" id="booking-title" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น ประชุมทีม Marketing">
-     </div>
-     <div><label class="block text-sm font-medium text-slate-700 mb-1">ห้องประชุม *</label>
-      <div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"> <input type="radio" name="room" value="Mind Room" class="peer hidden" required>
-        <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition">
-         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-mind"></span> <span class="font-medium text-slate-700">Mind Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Reality Room" class="peer hidden">
-        <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-pink-500 peer-checked:bg-pink-50 transition">
-         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-reality"></span> <span class="font-medium text-slate-700">Reality Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Power Room" class="peer hidden">
-        <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 transition">
-         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-power"></span> <span class="font-medium text-slate-700">Power Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Space Room" class="peer hidden">
-        <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition">
-         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-space"></span> <span class="font-medium text-slate-700">Space Room</span>
-         </div>
-        </div></label>
-      </div>
-     </div>
-     <div class="grid grid-cols-2 gap-4">
-      <div><label class="block text-sm font-medium text-slate-700 mb-1">วันที่ *</label>
-       <div class="relative"><input type="text" id="booking-date-display" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer bg-white" onclick="toggleDatePicker()" readonly placeholder="เลือกวันที่"> <input type="hidden" id="booking-date">
-        <div id="date-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-20 p-4 w-80">
-         <div>
-          <div class="flex items-center justify-between mb-4"><button type="button" onclick="prevPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
-            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg></button>
-           <div class="text-center">
-            <div id="picker-month-label" class="font-semibold text-slate-800"></div>
-           </div><button type="button" onclick="nextPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
-            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg></button>
-          </div>
-          <div class="grid grid-cols-7 gap-1 mb-2">
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            อา
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            จ
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            อ
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            พ
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            พฤ
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            ศ
-           </div>
-           <div class="text-center text-xs text-slate-500 font-medium p-2">
-            ส
-           </div>
-          </div>
-          <div id="date-picker-grid" class="grid grid-cols-7 gap-1"></div>
-         </div>
+</head>
+
+<body class="h-full bg-slate-50 overflow-auto">
+  <div id="app" class="h-full w-full flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 room-mind rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
         </div>
-       </div>
-      </div>
-      <div><label class="block text-sm font-medium text-slate-700 mb-1">การจองซ้ำ</label> <select id="recurrence-type" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"> <option value="none">ไม่ซ้ำ</option> <option value="daily">ทุกวัน</option> <option value="weekly">ทุกสัปดาห์</option> <option value="biweekly">ทุก 2 สัปดาห์</option> <option value="monthly">ทุกเดือน</option> </select>
-      </div>
-     </div>
-     <div id="recurrence-end-container" class="hidden"><label class="block text-sm font-medium text-slate-700 mb-1">สิ้นสุดการจองซ้ำ</label>
-      <div class="relative"><input type="text" id="recurrence-end-display" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer bg-white" onclick="toggleRecurrencePicker()" readonly placeholder="เลือกวันที่"> <input type="hidden" id="recurrence-end">
-       <div id="recurrence-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-20 p-4 w-80">
         <div>
-         <div class="flex items-center justify-between mb-4"><button type="button" onclick="prevRecurrenceMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
-           <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-           </svg></button>
-          <div class="text-center">
-           <div id="recurrence-picker-label" class="font-semibold text-slate-800"></div>
-          </div><button type="button" onclick="nextRecurrenceMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
-           <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-           </svg></button>
-         </div>
-         <div class="grid grid-cols-7 gap-1 mb-2">
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           อา
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           จ
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           อ
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           พ
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           พฤ
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           ศ
-          </div>
-          <div class="text-center text-xs text-slate-500 font-medium p-2">
-           ส
-          </div>
-         </div>
-         <div id="recurrence-picker-grid" class="grid grid-cols-7 gap-1"></div>
+          <h1 id="app-title" class="text-xl font-semibold text-slate-800">Meeting Room Booking</h1>
+          <p class="text-xs text-slate-500">ระบบจองห้องประชุม (เชื่อม Google Sheet/Calendar)</p>
+          <p id="api-status" class="text-[11px] text-slate-400 mt-0.5">กำลังเชื่อมต่อ…</p>
         </div>
-       </div>
       </div>
-     </div>
-     <div class="grid grid-cols-2 gap-4">
-      <div><label class="block text-sm font-medium text-slate-700 mb-1">เวลาเริ่ม *</label> <select id="booking-start" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"> </select>
+
+      <button onclick="openBookingModal()" class="bg-emerald-200 text-emerald-900 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-emerald-300 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        จองห้องประชุม
+      </button>
+    </header>
+
+    <!-- Navigation -->
+    <div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <button onclick="navigateMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg transition">
+          <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <button onclick="goToToday()" class="px-3 py-1.5 text-sm font-medium text-emerald-900 bg-emerald-200 hover:bg-emerald-300 rounded-lg transition">วันนี้</button>
+
+        <button onclick="navigateMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg transition">
+          <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <h2 id="current-month" class="text-lg font-semibold text-slate-800 ml-2"></h2>
       </div>
-      <div><label class="block text-sm font-medium text-slate-700 mb-1">เวลาสิ้นสุด *</label> <select id="booking-end" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"> </select>
+
+      <div class="flex items-center gap-2">
+        <select id="view-mode" onchange="changeView(this.value)"
+          class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
+          <option value="month">มุมมองเดือน</option>
+          <option value="week">มุมมองสัปดาห์</option>
+          <option value="day">มุมมองวัน</option>
+        </select>
+
+        <select id="room-filter" onchange="filterByRoom(this.value)"
+          class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
+          <option value="all">ทุกห้อง</option>
+          <option value="Mind Room">🟡 Mind Room</option>
+          <option value="Reality Room">🔴 Reality Room</option>
+          <option value="Power Room">🟣 Power Room</option>
+          <option value="Space Room">🔵 Space Room</option>
+        </select>
       </div>
-     </div>
-     <div><label class="block text-sm font-medium text-slate-700 mb-1">ผู้เข้าร่วม</label> <input type="text" id="booking-attendees" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น john@email.com, jane@email.com">
-     </div>
-     <div><label class="block text-sm font-medium text-slate-700 mb-1">รายละเอียด</label> <textarea id="booking-description" rows="3" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-     </div>
-     <div id="conflict-warning" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
-      <div class="flex items-center gap-2 text-red-700">
-       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-       </svg><span class="text-sm font-medium">ห้องประชุมนี้ถูกจองในช่วงเวลาดังกล่าวแล้ว</span>
-      </div>
-     </div>
-     <div class="flex gap-3 pt-4"><button type="button" onclick="closeBookingModal()" class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">ยกเลิก</button> <button type="submit" id="submit-btn" class="flex-1 px-4 py-2.5 room-mind text-white rounded-lg font-medium hover:opacity-90 transition">บันทึก</button>
-     </div>
-    </form>
-   </div>
-  </div><!-- View Booking Modal -->
-  <div id="view-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-4">
-   <div class="bg-white rounded-2xl w-full max-w-md slide-in">
-    <div id="view-modal-header" class="p-6 rounded-t-2xl">
-     <div class="flex items-center justify-between">
-      <h3 id="view-title" class="text-xl font-semibold text-white"></h3><button onclick="closeViewModal()" class="p-2 hover:bg-white/20 rounded-lg transition">
-       <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-       </svg></button>
-     </div>
     </div>
-    <div class="p-6 space-y-4">
-     <div class="flex items-center gap-3">
-      <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg><span id="view-room" class="text-slate-700"></span>
-     </div>
-     <div class="flex items-center gap-3">
-      <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg><span id="view-date" class="text-slate-700"></span>
-     </div>
-     <div class="flex items-center gap-3">
-      <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg><span id="view-time" class="text-slate-700"></span>
-     </div>
-     <div id="view-recurrence-container" class="flex items-center gap-3">
-      <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg><span id="view-recurrence" class="text-slate-700"></span>
-     </div>
-     <div id="view-attendees-container" class="flex items-start gap-3">
-      <svg class="w-5 h-5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg><span id="view-attendees" class="text-slate-700"></span>
-     </div>
-     <div id="view-description-container" class="flex items-start gap-3">
-      <svg class="w-5 h-5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-      </svg><span id="view-description" class="text-slate-700"></span>
-     </div>
-     <div class="flex gap-3 pt-4"><button onclick="editBooking()" class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
-       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-       </svg> แก้ไข </button> <button onclick="showDeleteConfirm()" id="delete-btn" class="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2">
-       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-       </svg> ลบ </button>
-     </div><!-- Delete Confirmation -->
-     <div id="delete-confirm" class="hidden pt-2">
-      <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
-       <p class="text-sm text-red-700 mb-3">คุณต้องการลบการจองนี้หรือไม่?</p>
-       <div id="delete-options" class="space-y-2"><button onclick="deleteBooking('single')" class="w-full px-3 py-2 text-sm bg-white border border-red-200 text-red-700 rounded-lg hover:bg-red-50 transition">ลบเฉพาะรายการนี้</button> <button onclick="deleteBooking('all')" id="delete-all-btn" class="w-full px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition">ลบทั้งชุด (การจองซ้ำทั้งหมด)</button>
-       </div><button onclick="hideDeleteConfirm()" class="w-full mt-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition">ยกเลิก</button>
-      </div>
-     </div>
+
+    <!-- Room Legend -->
+    <div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center gap-4 flex-shrink-0 overflow-x-auto">
+      <span class="text-sm text-slate-500 flex-shrink-0">ห้องประชุม:</span>
+      <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-mind"></span> <span class="text-sm text-slate-700">Mind Room</span></div>
+      <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-reality"></span> <span class="text-sm text-slate-700">Reality Room</span></div>
+      <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-power"></span> <span class="text-sm text-slate-700">Power Room</span></div>
+      <div class="flex items-center gap-1 flex-shrink-0"><span class="w-3 h-3 rounded-full room-space"></span> <span class="text-sm text-slate-700">Space Room</span></div>
     </div>
-   </div>
-  </div><!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50"><span id="toast-message"></span>
+
+    <!-- Calendar Container -->
+    <div id="calendar-container" class="flex-1 overflow-auto p-4"></div>
   </div>
-  <script>
-    // State
-    let bookings = [];
-    let currentDate = new Date();
-    let currentView = 'month';
-    let currentRoomFilter = 'all';
-    let selectedBooking = null;
-    let isEditing = false;
-    let pickerDate = new Date();
-    let recurrencePickerDate = new Date();
 
-    // Default config
-    const defaultConfig = {
-      app_title: 'Meeting Room Booking',
-      primary_color: '#667eea',
-      secondary_color: '#f8fafc',
-      text_color: '#1e293b',
-      accent_color: '#f093fb',
-      border_color: '#e2e8f0'
-    };
-
-    // Room colors mapping
-    const roomColors = {
-      'Mind Room': { class: 'room-mind', light: 'room-mind-light', hex: '#667eea' },
-      'Reality Room': { class: 'room-reality', light: 'room-reality-light', hex: '#f093fb' },
-      'Power Room': { class: 'room-power', light: 'room-power-light', hex: '#4facfe' },
-      'Space Room': { class: 'room-space', light: 'room-space-light', hex: '#43e97b' }
-    };
-
-    // Time options
-    const timeOptions = [];
-    for (let h = 7; h <= 20; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        timeOptions.push(time);
-      }
-    }
-
-    // Recurrence labels
-    const recurrenceLabels = {
-      'none': 'ไม่ซ้ำ',
-      'daily': 'ทุกวัน',
-      'weekly': 'ทุกสัปดาห์',
-      'biweekly': 'ทุก 2 สัปดาห์',
-      'monthly': 'ทุกเดือน'
-    };
-
-    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
-                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-
-    // Initialize time selects
-    function initTimeSelects() {
-      const startSelect = document.getElementById('booking-start');
-      const endSelect = document.getElementById('booking-end');
-      
-      startSelect.innerHTML = timeOptions.map(t => `<option value="${t}">${t}</option>`).join('');
-      endSelect.innerHTML = timeOptions.map(t => `<option value="${t}">${t}</option>`).join('');
-      
-      startSelect.value = '09:00';
-      endSelect.value = '10:00';
-    }
-
-    // Data handler for SDK
-    const dataHandler = {
-      onDataChanged(data) {
-        bookings = data;
-        renderCalendar();
-      }
-    };
-
-    // Initialize
-    async function init() {
-      initTimeSelects();
-      
-      // Initialize Element SDK
-      if (window.elementSdk) {
-        window.elementSdk.init({
-          defaultConfig,
-          onConfigChange: async (config) => {
-            document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
-          },
-          mapToCapabilities: (config) => ({
-            recolorables: [
-              {
-                get: () => config.primary_color || defaultConfig.primary_color,
-                set: (value) => window.elementSdk.setConfig({ primary_color: value })
-              },
-              {
-                get: () => config.secondary_color || defaultConfig.secondary_color,
-                set: (value) => window.elementSdk.setConfig({ secondary_color: value })
-              },
-              {
-                get: () => config.text_color || defaultConfig.text_color,
-                set: (value) => window.elementSdk.setConfig({ text_color: value })
-              },
-              {
-                get: () => config.accent_color || defaultConfig.accent_color,
-                set: (value) => window.elementSdk.setConfig({ accent_color: value })
-              },
-              {
-                get: () => config.border_color || defaultConfig.border_color,
-                set: (value) => window.elementSdk.setConfig({ border_color: value })
-              }
-            ],
-            borderables: [],
-            fontEditable: undefined,
-            fontSizeable: undefined
-          }),
-          mapToEditPanelValues: (config) => new Map([
-            ['app_title', config.app_title || defaultConfig.app_title]
-          ])
-        });
-      }
-
-      // Initialize Data SDK
-      if (window.dataSdk) {
-        const result = await window.dataSdk.init(dataHandler);
-        if (!result.isOk) {
-          console.error('Failed to initialize data SDK');
-        }
-      }
-
-      // Event listeners
-      document.getElementById('recurrence-type').addEventListener('change', function() {
-        const container = document.getElementById('recurrence-end-container');
-        if (this.value !== 'none') {
-          container.classList.remove('hidden');
-          renderRecurrencePicker();
-        } else {
-          container.classList.add('hidden');
-        }
-      });
-
-      document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
-
-      // Check for conflicts on input change
-      ['booking-date', 'booking-start', 'booking-end'].forEach(id => {
-        document.getElementById(id).addEventListener('change', checkConflict);
-      });
-      document.querySelectorAll('input[name="room"]').forEach(input => {
-        input.addEventListener('change', checkConflict);
-      });
-
-      // Close pickers when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.relative')) {
-          document.getElementById('date-picker').classList.add('hidden');
-          document.getElementById('recurrence-picker').classList.add('hidden');
-        }
-      });
-
-      renderCalendar();
-    }
-
-    // Date picker functions
-    function toggleDatePicker() {
-      const picker = document.getElementById('date-picker');
-      picker.classList.toggle('hidden');
-      if (!picker.classList.contains('hidden')) {
-        renderDatePicker();
-      }
-    }
-
-    function renderDatePicker() {
-      updatePickerMonth();
-    }
-
-    function updatePickerMonth() {
-      const year = pickerDate.getFullYear();
-      const month = pickerDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDay = firstDay.getDay();
-      const totalDays = lastDay.getDate();
-      const today = new Date();
-      const selectedDate = document.getElementById('booking-date').value;
-
-      document.getElementById('picker-month-label').textContent = `${thaiMonths[month]} ${year + 543}`;
-
-      let html = '';
-      
-      // Empty cells
-      for (let i = 0; i < startDay; i++) {
-        html += `<div class="date-picker-day other-month"></div>`;
-      }
-
-      // Days
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-        const isSelected = selectedDate === dateStr;
-
-        let classes = 'date-picker-day';
-        if (isSelected) classes += ' selected';
-        if (isToday) classes += ' today';
-
-        html += `
-          <button type="button" class="${classes}" onclick="selectDate('${dateStr}'); event.preventDefault();">
-            ${day}
+  <!-- Booking Modal -->
+  <div id="booking-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90%] overflow-y-auto slide-in">
+      <div class="p-6 border-b border-slate-200">
+        <div class="flex items-center justify-between">
+          <h3 id="modal-title" class="text-xl font-semibold text-slate-800">จองห้องประชุม</h3>
+          <button onclick="closeBookingModal()" class="p-2 hover:bg-slate-100 rounded-lg transition">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
-        `;
-      }
+        </div>
+      </div>
 
-      // Empty cells at end
-      const remainingCells = (7 - ((startDay + totalDays) % 7)) % 7;
-      for (let i = 0; i < remainingCells; i++) {
-        html += `<div class="date-picker-day other-month"></div>`;
-      }
+      <form id="booking-form" class="p-6 space-y-4">
+        <input type="hidden" id="booking-id" />
 
-      document.getElementById('date-picker-grid').innerHTML = html;
-    }
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">อีเมลผู้จอง (Booker Email) *</label>
+          <input type="email" id="booking-booker-email" required
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"
+            placeholder="เช่น staff@company.com" />
+          <p class="text-xs text-slate-400 mt-1">จำเป็นสำหรับ Backend (lookup พนักงาน + บันทึกชีต + ส่ง invite)</p>
+        </div>
 
-    function prevPickerMonth() {
-      pickerDate.setMonth(pickerDate.getMonth() - 1);
-      updatePickerMonth();
-    }
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">หัวข้อการประชุม *</label>
+          <input type="text" id="booking-title" required
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"
+            placeholder="เช่น ประชุมทีม Marketing" />
+        </div>
 
-    function nextPickerMonth() {
-      pickerDate.setMonth(pickerDate.getMonth() + 1);
-      updatePickerMonth();
-    }
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ห้องประชุม *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="room" value="Mind Room" class="peer hidden" required />
+              <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition">
+                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-mind"></span><span class="font-medium text-slate-700">Mind Room</span></div>
+              </div>
+            </label>
 
-    function selectDate(dateStr) {
-      document.getElementById('booking-date').value = dateStr;
-      document.getElementById('booking-date-display').value = formatDateDisplay(dateStr);
-      document.getElementById('date-picker').classList.add('hidden');
-      checkConflict();
-    }
+            <label class="cursor-pointer">
+              <input type="radio" name="room" value="Reality Room" class="peer hidden" />
+              <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-red-500 peer-checked:bg-red-50 transition">
+                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-reality"></span><span class="font-medium text-slate-700">Reality Room</span></div>
+              </div>
+            </label>
 
-    function formatDateDisplay(dateStr) {
-      const [year, month, day] = dateStr.split('-');
-      return `${parseInt(day)} ${thaiMonths[parseInt(month) - 1]} ${parseInt(year) + 543}`;
-    }
+            <label class="cursor-pointer">
+              <input type="radio" name="room" value="Power Room" class="peer hidden" />
+              <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-purple-500 peer-checked:bg-purple-50 transition">
+                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-power"></span><span class="font-medium text-slate-700">Power Room</span></div>
+              </div>
+            </label>
 
-    // Recurrence picker functions
-    function toggleRecurrencePicker() {
-      const picker = document.getElementById('recurrence-picker');
-      picker.classList.toggle('hidden');
-      if (!picker.classList.contains('hidden')) {
-        renderRecurrencePicker();
-      }
-    }
-
-    function renderRecurrencePicker() {
-      updateRecurrencePickerMonth();
-    }
-
-    function updateRecurrencePickerMonth() {
-      const year = recurrencePickerDate.getFullYear();
-      const month = recurrencePickerDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDay = firstDay.getDay();
-      const totalDays = lastDay.getDate();
-      const today = new Date();
-      const selectedDate = document.getElementById('recurrence-end').value;
-
-      document.getElementById('recurrence-picker-label').textContent = `${thaiMonths[month]} ${year + 543}`;
-
-      let html = '';
-      
-      // Empty cells
-      for (let i = 0; i < startDay; i++) {
-        html += `<div class="date-picker-day other-month"></div>`;
-      }
-
-      // Days
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-        const isSelected = selectedDate === dateStr;
-
-        let classes = 'date-picker-day';
-        if (isSelected) classes += ' selected';
-        if (isToday) classes += ' today';
-
-        html += `
-          <button type="button" class="${classes}" onclick="selectRecurrenceDate('${dateStr}'); event.preventDefault();">
-            ${day}
-          </button>
-        `;
-      }
-
-      // Empty cells at end
-      const remainingCells = (7 - ((startDay + totalDays) % 7)) % 7;
-      for (let i = 0; i < remainingCells; i++) {
-        html += `<div class="date-picker-day other-month"></div>`;
-      }
-
-      document.getElementById('recurrence-picker-grid').innerHTML = html;
-    }
-
-    function prevRecurrenceMonth() {
-      recurrencePickerDate.setMonth(recurrencePickerDate.getMonth() - 1);
-      updateRecurrencePickerMonth();
-    }
-
-    function nextRecurrenceMonth() {
-      recurrencePickerDate.setMonth(recurrencePickerDate.getMonth() + 1);
-      updateRecurrencePickerMonth();
-    }
-
-    function selectRecurrenceDate(dateStr) {
-      document.getElementById('recurrence-end').value = dateStr;
-      document.getElementById('recurrence-end-display').value = formatDateDisplay(dateStr);
-      document.getElementById('recurrence-picker').classList.add('hidden');
-    }
-
-    // Navigate month
-    function navigateMonth(direction) {
-      if (currentView === 'month') {
-        currentDate.setMonth(currentDate.getMonth() + direction);
-      } else if (currentView === 'week') {
-        currentDate.setDate(currentDate.getDate() + (direction * 7));
-      } else {
-        currentDate.setDate(currentDate.getDate() + direction);
-      }
-      renderCalendar();
-    }
-
-    // Go to today
-    function goToToday() {
-      currentDate = new Date();
-      renderCalendar();
-    }
-
-    // Change view
-    function changeView(view) {
-      currentView = view;
-      renderCalendar();
-    }
-
-    // Filter by room
-    function filterByRoom(room) {
-      currentRoomFilter = room;
-      renderCalendar();
-    }
-
-    // Get filtered bookings
-    function getFilteredBookings() {
-      if (currentRoomFilter === 'all') return bookings;
-      return bookings.filter(b => b.room === currentRoomFilter);
-    }
-
-    // Render calendar
-    function renderCalendar() {
-      const container = document.getElementById('calendar-container');
-      const monthLabel = document.getElementById('current-month');
-      
-      const thaiDays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-      const thaiDaysFull = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-
-      if (currentView === 'month') {
-        monthLabel.textContent = `${thaiMonths[currentDate.getMonth()]} ${currentDate.getFullYear() + 543}`;
-        container.innerHTML = renderMonthView(thaiDays);
-      } else if (currentView === 'week') {
-        const weekStart = getWeekStart(currentDate);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        monthLabel.textContent = `${weekStart.getDate()} - ${weekEnd.getDate()} ${thaiMonths[weekEnd.getMonth()]} ${weekEnd.getFullYear() + 543}`;
-        container.innerHTML = renderWeekView(thaiDaysFull);
-      } else {
-        monthLabel.textContent = `${currentDate.getDate()} ${thaiMonths[currentDate.getMonth()]} ${currentDate.getFullYear() + 543}`;
-        container.innerHTML = renderDayView();
-      }
-    }
-
-    // Get week start (Sunday)
-    function getWeekStart(date) {
-      const d = new Date(date);
-      const day = d.getDay();
-      d.setDate(d.getDate() - day);
-      return d;
-    }
-
-    // Render month view
-    function renderMonthView(thaiDays) {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDay = firstDay.getDay();
-      const totalDays = lastDay.getDate();
-      const today = new Date();
-
-      let html = `
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="calendar-grid bg-slate-50 border-b border-slate-200">
-            ${thaiDays.map(d => `<div class="p-3 text-center text-sm font-medium text-slate-600">${d}</div>`).join('')}
+            <label class="cursor-pointer">
+              <input type="radio" name="room" value="Space Room" class="peer hidden" />
+              <div class="p-3 border-2 border-slate-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 transition">
+                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full room-space"></span><span class="font-medium text-slate-700">Space Room</span></div>
+              </div>
+            </label>
           </div>
-          <div class="calendar-grid">
-      `;
+        </div>
 
-      // Empty cells before first day
-      for (let i = 0; i < startDay; i++) {
-        html += `<div class="min-h-[100px] p-2 border-b border-r border-slate-100 bg-slate-50"></div>`;
-      }
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">วันที่ *</label>
+            <div class="relative">
+              <input type="text" id="booking-date-display" required
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none cursor-pointer bg-white"
+                onclick="toggleDatePicker()" readonly placeholder="เลือกวันที่" />
+              <input type="hidden" id="booking-date" />
 
-      // Days
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-        const dayBookings = getFilteredBookings().filter(b => b.date === dateStr);
+              <div id="date-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-20 p-4 w-80">
+                <div class="flex items-center justify-between mb-4">
+                  <button type="button" onclick="prevPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
 
-        html += `
-          <div class="min-h-[100px] p-2 border-b border-r border-slate-100 hover:bg-slate-50 transition cursor-pointer" onclick="openBookingModal('${dateStr}')">
-            <div class="flex items-center justify-between mb-1">
-              <span class="${isToday ? 'w-7 h-7 flex items-center justify-center rounded-full bg-indigo-500 text-white text-sm font-medium' : 'text-sm text-slate-700'}">${day}</span>
-            </div>
-            <div class="space-y-1">
-              ${dayBookings.slice(0, 3).map(b => `
-                <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')" class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs truncate cursor-pointer">
-                  <span class="font-medium">${b.start_time}</span> ${b.title}
+                  <div class="text-center">
+                    <div id="picker-month-label" class="font-semibold text-slate-800"></div>
+                  </div>
+
+                  <button type="button" onclick="nextPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition">
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
-              `).join('')}
-              ${dayBookings.length > 3 ? `<div class="text-xs text-slate-500 pl-2">+${dayBookings.length - 3} รายการ</div>` : ''}
-            </div>
-          </div>
-        `;
-      }
 
-      // Empty cells after last day
-      const remainingCells = (7 - ((startDay + totalDays) % 7)) % 7;
-      for (let i = 0; i < remainingCells; i++) {
-        html += `<div class="min-h-[100px] p-2 border-b border-r border-slate-100 bg-slate-50"></div>`;
-      }
-
-      html += `</div></div>`;
-      return html;
-    }
-
-    // Render week view
-    function renderWeekView(thaiDaysFull) {
-      const weekStart = getWeekStart(currentDate);
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-
-      let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">`;
-      
-      // Header
-      html += `<div class="grid grid-cols-8 border-b border-slate-200 bg-slate-50">`;
-      html += `<div class="p-3 text-center text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
-      
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(weekStart);
-        d.setDate(d.getDate() + i);
-        const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-        const isToday = dateStr === todayStr;
-        html += `
-          <div class="p-3 text-center border-r border-slate-200 ${isToday ? 'bg-indigo-50' : ''}">
-            <div class="text-xs text-slate-500">${thaiDaysFull[i]}</div>
-            <div class="${isToday ? 'w-8 h-8 mx-auto flex items-center justify-center rounded-full bg-indigo-500 text-white font-semibold' : 'font-semibold text-slate-700'}">${d.getDate()}</div>
-          </div>
-        `;
-      }
-      html += `</div>`;
-
-      // Time slots
-      html += `<div class="overflow-y-auto" style="max-height: 500px;">`;
-      for (let h = 7; h <= 20; h++) {
-        html += `<div class="grid grid-cols-8 border-b border-slate-100">`;
-        html += `<div class="p-2 text-xs text-slate-500 text-center border-r border-slate-100 bg-slate-50">${h.toString().padStart(2, '0')}:00</div>`;
-        
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(weekStart);
-          d.setDate(d.getDate() + i);
-          const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-          const hourBookings = getFilteredBookings().filter(b => {
-            if (b.date !== dateStr) return false;
-            const startHour = parseInt(b.start_time.split(':')[0]);
-            return startHour === h;
-          });
-
-          html += `
-            <div class="p-1 min-h-[60px] border-r border-slate-100 time-slot" onclick="openBookingModal('${dateStr}', '${h.toString().padStart(2, '0')}:00')">
-              ${hourBookings.map(b => `
-                <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')" class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs mb-1 cursor-pointer">
-                  <div class="font-medium truncate">${b.title}</div>
-                  <div class="text-slate-500">${b.start_time}-${b.end_time}</div>
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">อา</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">จ</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">อ</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">พ</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">พฤ</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">ศ</div>
+                  <div class="text-center text-xs text-slate-500 font-medium p-2">ส</div>
                 </div>
-              `).join('')}
-            </div>
-          `;
-        }
-        html += `</div>`;
-      }
-      html += `</div></div>`;
 
-      return html;
-    }
-
-    // Render day view
-    function renderDayView() {
-      const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
-      const rooms = ['Mind Room', 'Reality Room', 'Power Room', 'Space Room'];
-      const filteredRooms = currentRoomFilter === 'all' ? rooms : [currentRoomFilter];
-
-      let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">`;
-      
-      // Header
-      html += `<div class="grid border-b border-slate-200 bg-slate-50" style="grid-template-columns: 60px repeat(${filteredRooms.length}, 1fr);">`;
-      html += `<div class="p-3 text-center text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
-      
-      filteredRooms.forEach(room => {
-        html += `
-          <div class="p-3 text-center border-r border-slate-200">
-            <div class="flex items-center justify-center gap-2">
-              <span class="w-3 h-3 rounded-full ${roomColors[room].class}"></span>
-              <span class="font-medium text-slate-700">${room}</span>
+                <div id="date-picker-grid" class="grid grid-cols-7 gap-1"></div>
+              </div>
             </div>
           </div>
-        `;
-      });
-      html += `</div>`;
 
-      // Time slots
-      html += `<div class="overflow-y-auto" style="max-height: 500px;">`;
-      for (let h = 7; h <= 20; h++) {
-        html += `<div class="grid border-b border-slate-100" style="grid-template-columns: 60px repeat(${filteredRooms.length}, 1fr);">`;
-        html += `<div class="p-2 text-xs text-slate-500 text-center border-r border-slate-100 bg-slate-50">${h.toString().padStart(2, '0')}:00</div>`;
-        
-        filteredRooms.forEach(room => {
-          const hourBookings = bookings.filter(b => {
-            if (b.date !== dateStr || b.room !== room) return false;
-            const startHour = parseInt(b.start_time.split(':')[0]);
-            return startHour === h;
-          });
-
-          html += `
-            <div class="p-1 min-h-[60px] border-r border-slate-100 time-slot" onclick="openBookingModal('${dateStr}', '${h.toString().padStart(2, '0')}:00', '${room}')">
-              ${hourBookings.map(b => `
-                <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')" class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs mb-1 cursor-pointer">
-                  <div class="font-medium truncate">${b.title}</div>
-                  <div class="text-slate-500">${b.start_time}-${b.end_time}</div>
-                </div>
-              `).join('')}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">หมายเหตุ</label>
+            <div class="w-full px-4 py-2.5 border border-slate-200 rounded-lg bg-slate-50 text-sm text-slate-600">
+              บันทึกลงชีต + สร้าง Calendar Event
             </div>
-          `;
-        });
-        html += `</div>`;
-      }
-      html += `</div></div>`;
+          </div>
+        </div>
 
-      return html;
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">เวลาเริ่มต้น *</label>
+            <select id="booking-start" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"></select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">เวลาสิ้นสุด *</label>
+            <select id="booking-end" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ผู้เข้าร่วม (คั่นด้วย ,)</label>
+          <input type="text" id="booking-attendees"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"
+            placeholder="เช่น john@email.com, jane@email.com" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">รายละเอียด</label>
+          <textarea id="booking-description" rows="3"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none resize-none"
+            placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+        </div>
+
+        <div id="conflict-warning" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-center gap-2 text-red-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span class="text-sm font-medium">ห้องประชุมนี้ถูกจองในช่วงเวลาดังกล่าวแล้ว</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeBookingModal()"
+            class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">ยกเลิก</button>
+          <button type="submit" id="submit-btn"
+            class="flex-1 px-4 py-2.5 bg-emerald-200 text-emerald-900 rounded-lg font-medium hover:bg-emerald-300 transition">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <span id="toast-message"></span>
+  </div>
+
+<script>
+/* ============================================================
+  CONFIG (ของคุณ)
+============================================================ */
+const API_KEY_EXPECTED = "ESS-ROOM-2026";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCxX_szEHnOEX8wjlIukDCupjOmC9wSow/exec";
+
+/* ============================================================
+  ROOM MAP
+============================================================ */
+const ROOM_KEYS = ["mind","reality","power","space"];
+const roomKeyToName = {
+  mind: "Mind Room",
+  reality: "Reality Room",
+  power: "Power Room",
+  space: "Space Room"
+};
+const roomNameToKey = {
+  "Mind Room": "mind",
+  "Reality Room": "reality",
+  "Power Room": "power",
+  "Space Room": "space"
+};
+
+const roomColors = {
+  'Mind Room': { class: 'room-mind', light: 'room-mind-light', hex: '#F5D547' },
+  'Reality Room': { class: 'room-reality', light: 'room-reality-light', hex: '#FF2D55' },
+  'Power Room': { class: 'room-power', light: 'room-power-light', hex: '#9C27B0' },
+  'Space Room': { class: 'room-space', light: 'room-space-light', hex: '#2196F3' }
+};
+
+const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+/* ============================================================
+  STATE
+============================================================ */
+let bookings = [];                 // flattened bookings for current view
+let bookingsCache = new Map();     // key = `${roomKey}|${date}` => array
+let currentDate = new Date();
+let currentView = 'month';
+let currentRoomFilter = 'all';
+
+let pickerDate = new Date();
+let selectedBooking = null;
+
+/* ============================================================
+  JSONP CLIENT (doGet ต้องมี callback)
+============================================================ */
+function apiJsonp(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cb = `__cb_${Date.now()}_${Math.floor(Math.random()*1e6)}`;
+    const query = new URLSearchParams({
+      action,
+      apiKey: API_KEY_EXPECTED,
+      callback: cb,
+      ...params
+    });
+
+    const url = `${WEBAPP_URL}?${query.toString()}`;
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = true;
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("JSONP_TIMEOUT"));
+    }, 15000);
+
+    window[cb] = (data) => {
+      clearTimeout(timer);
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error("JSONP_NETWORK_ERROR"));
+    };
+
+    function cleanup() {
+      try { delete window[cb]; } catch(_) { window[cb] = undefined; }
+      if (script && script.parentNode) script.parentNode.removeChild(script);
     }
 
-    // Open booking modal
-    function openBookingModal(date = null, time = null, room = null) {
-      isEditing = false;
-      document.getElementById('modal-title').textContent = 'จองห้องประชุม';
-      document.getElementById('booking-form').reset();
-      document.getElementById('booking-id').value = '';
-      document.getElementById('recurrence-group-id').value = '';
-      document.getElementById('conflict-warning').classList.add('hidden');
-      document.getElementById('recurrence-end-container').classList.add('hidden');
-      document.getElementById('date-picker').classList.add('hidden');
-      document.getElementById('recurrence-picker').classList.add('hidden');
-      
-      if (date) {
-        document.getElementById('booking-date').value = date;
-        document.getElementById('booking-date-display').value = formatDateDisplay(date);
-        pickerDate = new Date(date);
-      } else {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('booking-date').value = today;
-        document.getElementById('booking-date-display').value = formatDateDisplay(today);
-        pickerDate = new Date();
-      }
-      
-      if (time) {
-        document.getElementById('booking-start').value = time;
-        const endHour = parseInt(time.split(':')[0]) + 1;
-        document.getElementById('booking-end').value = `${endHour.toString().padStart(2, '0')}:00`;
-      } else {
-        document.getElementById('booking-start').value = '09:00';
-        document.getElementById('booking-end').value = '10:00';
-      }
-      
-      if (room) {
-        const radioBtn = document.querySelector(`input[name="room"][value="${room}"]`);
-        if (radioBtn) radioBtn.checked = true;
-      }
-      
-      document.getElementById('booking-modal').classList.remove('hidden');
-      document.getElementById('booking-modal').classList.add('flex');
-    }
+    document.body.appendChild(script);
+  });
+}
 
-    // Close booking modal
-    function closeBookingModal() {
-      document.getElementById('booking-modal').classList.add('hidden');
-      document.getElementById('booking-modal').classList.remove('flex');
-      document.getElementById('date-picker').classList.add('hidden');
-      document.getElementById('recurrence-picker').classList.add('hidden');
-    }
+/* ============================================================
+  TIME OPTIONS
+============================================================ */
+const timeOptions = [];
+for (let h = 7; h <= 20; h++) {
+  for (let m = 0; m < 60; m += 30) {
+    timeOptions.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+  }
+}
 
-    // Check for conflicts
-    function checkConflict() {
-      const date = document.getElementById('booking-date').value;
-      const start = document.getElementById('booking-start').value;
-      const end = document.getElementById('booking-end').value;
-      const room = document.querySelector('input[name="room"]:checked')?.value;
-      const currentId = document.getElementById('booking-id').value;
+function initTimeSelects() {
+  const startSelect = document.getElementById('booking-start');
+  const endSelect = document.getElementById('booking-end');
+  startSelect.innerHTML = timeOptions.map(t => `<option value="${t}">${t}</option>`).join('');
+  endSelect.innerHTML = timeOptions.map(t => `<option value="${t}">${t}</option>`).join('');
+  startSelect.value = '09:00';
+  endSelect.value = '10:00';
+}
 
-      if (!date || !start || !end || !room) {
-        document.getElementById('conflict-warning').classList.add('hidden');
-        return false;
-      }
+/* ============================================================
+  UTIL
+============================================================ */
+function ymd(d) {
+  const dt = (d instanceof Date) ? d : new Date(d);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const day = String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function formatDateDisplay(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  return `${parseInt(day)} ${thaiMonths[parseInt(month)-1]} ${parseInt(year)+543}`;
+}
+function toLocalIso(dateStr, timeStr) {
+  // สร้าง Date ด้วย local time แล้วส่งเป็น ISO (UTC) ให้ backend parse ได้
+  const d = new Date(`${dateStr}T${timeStr}:00`);
+  return d.toISOString();
+}
+function uidFromItem(roomKey, dateStr, it) {
+  // backend ไม่มี id เรา compose เอง
+  const base = `${roomKey}|${dateStr}|${it.start}|${it.end}|${it.title||''}`;
+  let h = 0;
+  for (let i=0;i<base.length;i++) h = ((h<<5)-h) + base.charCodeAt(i) | 0;
+  return `b_${Math.abs(h)}`;
+}
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-message').textContent = message;
+  toast.classList.remove('translate-y-20','opacity-0');
+  setTimeout(() => toast.classList.add('translate-y-20','opacity-0'), 3000);
+}
 
-      const hasConflict = bookings.some(b => {
-        if (b.__backendId === currentId) return false;
-        if (b.date !== date || b.room !== room) return false;
-        
-        const bStart = b.start_time;
-        const bEnd = b.end_time;
-        
-        return (start < bEnd && end > bStart);
-      });
+/* ============================================================
+  BACKEND LOAD: bookings(roomKey,date)
+============================================================ */
+async function loadBookingsFor(roomKey, dateStr) {
+  const cacheKey = `${roomKey}|${dateStr}`;
+  if (bookingsCache.has(cacheKey)) return bookingsCache.get(cacheKey);
 
-      if (hasConflict) {
-        document.getElementById('conflict-warning').classList.remove('hidden');
-      } else {
-        document.getElementById('conflict-warning').classList.add('hidden');
-      }
+  const res = await apiJsonp("bookings", { roomKey, date: dateStr });
+  if (!res || !res.ok) {
+    bookingsCache.set(cacheKey, []);
+    return [];
+  }
 
-      return hasConflict;
-    }
+  const items = (res.items || []).map(it => ({
+    __backendId: uidFromItem(roomKey, dateStr, it),
+    roomKey,
+    room: roomKeyToName[roomKey] || res.roomName || "",
+    date: dateStr,
+    start_time: it.start || "",
+    end_time: it.end || "",
+    title: it.title || "-",
+    department: it.department || "",
+    booker: it.booker || "",
+    attendees: it.attendees || "",
+    description: it.description || ""
+  }));
 
-    // Generate recurrence dates
-    function generateRecurrenceDates(startDate, endDate, type) {
-      const dates = [];
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      let current = new Date(start);
+  bookingsCache.set(cacheKey, items);
+  return items;
+}
 
-      while (current <= end) {
-        dates.push(current.toISOString().split('T')[0]);
-        
-        switch(type) {
-          case 'daily':
-            current.setDate(current.getDate() + 1);
-            break;
-          case 'weekly':
-            current.setDate(current.getDate() + 7);
-            break;
-          case 'biweekly':
-            current.setDate(current.getDate() + 14);
-            break;
-          case 'monthly':
-            current.setMonth(current.getMonth() + 1);
-            break;
-        }
-      }
+async function refreshVisibleBookings() {
+  const dates = getVisibleDates();
+  const rooms = (currentRoomFilter === "all")
+    ? ROOM_KEYS
+    : [roomNameToKey[currentRoomFilter]].filter(Boolean);
 
-      return dates;
-    }
+  // ยิงเป็น batch แบบคุมจำนวน (กันโหลดหนักเกิน)
+  const tasks = [];
+  for (const d of dates) {
+    for (const rk of rooms) tasks.push({ rk, d });
+  }
 
-    // Handle booking submit
-    async function handleBookingSubmit(e) {
-      e.preventDefault();
+  const out = [];
+  const concurrency = 10;
+  let i = 0;
 
-      if (checkConflict()) {
-        showToast('ไม่สามารถจองได้ เนื่องจากห้องถูกจองในช่วงเวลานี้แล้ว');
-        return;
-      }
-
-      if (bookings.length >= 999) {
-        showToast('ถึงขีดจำกัดการจองแล้ว กรุณาลบการจองเก่าก่อน');
-        return;
-      }
-
-      const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="animate-spin">⏳</span> กำลังบันทึก...';
-
-      const id = document.getElementById('booking-id').value;
-      const title = document.getElementById('booking-title').value;
-      const room = document.querySelector('input[name="room"]:checked').value;
-      const date = document.getElementById('booking-date').value;
-      const startTime = document.getElementById('booking-start').value;
-      const endTime = document.getElementById('booking-end').value;
-      const recurrenceType = document.getElementById('recurrence-type').value;
-      const recurrenceEnd = document.getElementById('recurrence-end').value;
-      const attendees = document.getElementById('booking-attendees').value;
-      const description = document.getElementById('booking-description').value;
-
+  async function worker() {
+    while (i < tasks.length) {
+      const idx = i++;
+      const t = tasks[idx];
       try {
-        if (id && isEditing) {
-          // Update existing booking
-          const existingBooking = bookings.find(b => b.__backendId === id);
-          if (existingBooking) {
-            const result = await window.dataSdk.update({
-              ...existingBooking,
-              title,
-              room,
-              date,
-              start_time: startTime,
-              end_time: endTime,
-              attendees,
-              description
-            });
-
-            if (result.isOk) {
-              showToast('อัปเดตการจองเรียบร้อย');
-            } else {
-              showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
-            }
-          }
-        } else {
-          // Create new booking(s)
-          if (recurrenceType !== 'none' && recurrenceEnd) {
-            const dates = generateRecurrenceDates(date, recurrenceEnd, recurrenceType);
-            const groupId = Date.now().toString();
-
-            for (const d of dates) {
-              if (bookings.length >= 999) break;
-              
-              const result = await window.dataSdk.create({
-                id: `${groupId}-${d}`,
-                title,
-                room,
-                date: d,
-                start_time: startTime,
-                end_time: endTime,
-                recurrence_type: recurrenceType,
-                recurrence_end: recurrenceEnd,
-                recurrence_group_id: groupId,
-                attendees,
-                description,
-                created_at: new Date().toISOString()
-              });
-
-              if (!result.isOk) {
-                showToast('เกิดข้อผิดพลาดในการสร้างการจองซ้ำ');
-                break;
-              }
-            }
-            showToast(`สร้างการจองซ้ำ ${dates.length} รายการเรียบร้อย`);
-          } else {
-            const result = await window.dataSdk.create({
-              id: Date.now().toString(),
-              title,
-              room,
-              date,
-              start_time: startTime,
-              end_time: endTime,
-              recurrence_type: 'none',
-              recurrence_end: '',
-              recurrence_group_id: '',
-              attendees,
-              description,
-              created_at: new Date().toISOString()
-            });
-
-            if (result.isOk) {
-              showToast('จองห้องประชุมเรียบร้อย');
-            } else {
-              showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
-            }
-          }
-        }
-      } catch (error) {
-        showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
+        const arr = await loadBookingsFor(t.rk, t.d);
+        out.push(...arr);
+      } catch (e) {
+        // ignore per-cell error
       }
+    }
+  }
 
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = 'บันทึก';
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
+  bookings = out;
+}
+
+/* ============================================================
+  VISIBLE DATES BY VIEW
+============================================================ */
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getVisibleDates() {
+  if (currentView === "day") {
+    return [ymd(currentDate)];
+  }
+
+  if (currentView === "week") {
+    const ws = getWeekStart(currentDate);
+    const arr = [];
+    for (let i=0;i<7;i++) {
+      const d = new Date(ws);
+      d.setDate(d.getDate()+i);
+      arr.push(ymd(d));
+    }
+    return arr;
+  }
+
+  // month: 6-week grid
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const first = new Date(year, month, 1);
+  const startDay = first.getDay();
+  const gridStart = new Date(first);
+  gridStart.setDate(first.getDate() - startDay);
+  gridStart.setHours(0,0,0,0);
+
+  const arr = [];
+  for (let i=0;i<42;i++) {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate()+i);
+    arr.push(ymd(d));
+  }
+  return arr;
+}
+
+/* ============================================================
+  FILTER
+============================================================ */
+function getFilteredBookings() {
+  if (currentRoomFilter === 'all') return bookings;
+  return bookings.filter(b => b.room === currentRoomFilter);
+}
+
+/* ============================================================
+  RENDER
+============================================================ */
+function renderCalendar() {
+  const container = document.getElementById('calendar-container');
+  const monthLabel = document.getElementById('current-month');
+
+  const thaiDays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  const thaiDaysFull = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+
+  if (currentView === 'month') {
+    monthLabel.textContent = `${thaiMonths[currentDate.getMonth()]} ${currentDate.getFullYear() + 543}`;
+    container.innerHTML = renderMonthView(thaiDays);
+  } else if (currentView === 'week') {
+    const ws = getWeekStart(currentDate);
+    const we = new Date(ws); we.setDate(we.getDate()+6);
+    monthLabel.textContent = `${ws.getDate()} - ${we.getDate()} ${thaiMonths[we.getMonth()]} ${we.getFullYear()+543}`;
+    container.innerHTML = renderWeekView(thaiDaysFull);
+  } else {
+    monthLabel.textContent = `${currentDate.getDate()} ${thaiMonths[currentDate.getMonth()]} ${currentDate.getFullYear()+543}`;
+    container.innerHTML = renderDayView();
+  }
+
+  // ดึงข้อมูลจาก backend แล้ว rerender อีกครั้ง
+  (async () => {
+    await refreshVisibleBookings();
+    // rerender after data loaded
+    if (currentView === 'month') container.innerHTML = renderMonthView(thaiDays);
+    else if (currentView === 'week') container.innerHTML = renderWeekView(thaiDaysFull);
+    else container.innerHTML = renderDayView();
+  })();
+}
+
+function renderMonthView(thaiDays) {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDay = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+  const today = new Date();
+
+  let html = `
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="calendar-grid bg-slate-50 border-b border-slate-200">
+        ${thaiDays.map(d => `<div class="p-3 text-center text-sm font-medium text-slate-600">${d}</div>`).join('')}
+      </div>
+      <div class="calendar-grid">
+  `;
+
+  // Empty cells before first day
+  for (let i = 0; i < startDay; i++) {
+    html += `<div class="min-h-[100px] p-2 border-b border-r border-slate-100 bg-slate-50"></div>`;
+  }
+
+  // Days
+  for (let day = 1; day <= totalDays; day++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+
+    const dayBookings = getFilteredBookings().filter(b => b.date === dateStr);
+
+    html += `
+      <div class="min-h-[100px] p-2 border-b border-r border-slate-100 hover:bg-slate-50 transition cursor-pointer"
+           onclick="openBookingModal('${dateStr}')">
+        <div class="flex items-center justify-between mb-1">
+          <span class="${isToday ? 'w-7 h-7 flex items-center justify-center rounded-full bg-emerald-200 text-emerald-900 text-sm font-medium' : 'text-sm text-slate-700'}">${day}</span>
+        </div>
+        <div class="space-y-1">
+          ${dayBookings.slice(0,3).map(b => `
+            <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')"
+                 class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs truncate cursor-pointer">
+              <span class="font-medium">${b.start_time}</span> ${b.title}
+            </div>
+          `).join('')}
+          ${dayBookings.length > 3 ? `<div class="text-xs text-slate-500 pl-2">+${dayBookings.length-3} รายการ</div>` : ''}
+          ${dayBookings.length === 0 ? `<div class="text-xs text-slate-300 pl-2">—</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Empty cells after last day
+  const remainingCells = (7 - ((startDay + totalDays) % 7)) % 7;
+  for (let i = 0; i < remainingCells; i++) {
+    html += `<div class="min-h-[100px] p-2 border-b border-r border-slate-100 bg-slate-50"></div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function renderWeekView(thaiDaysFull) {
+  const weekStart = getWeekStart(currentDate);
+  const today = new Date();
+  const todayStr = ymd(today);
+
+  let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">`;
+
+  html += `<div class="grid grid-cols-8 border-b border-slate-200 bg-slate-50">`;
+  html += `<div class="p-3 text-center text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
+
+  for (let i=0;i<7;i++) {
+    const d = new Date(weekStart); d.setDate(d.getDate()+i);
+    const ds = ymd(d);
+    const isToday = ds === todayStr;
+    html += `
+      <div class="p-3 text-center border-r border-slate-200 ${isToday ? 'bg-emerald-50' : ''}">
+        <div class="text-xs text-slate-500">${thaiDaysFull[i]}</div>
+        <div class="${isToday ? 'w-8 h-8 mx-auto flex items-center justify-center rounded-full bg-emerald-200 text-emerald-900 font-semibold' : 'font-semibold text-slate-700'}">${d.getDate()}</div>
+      </div>
+    `;
+  }
+  html += `</div>`;
+
+  html += `<div class="overflow-y-auto" style="max-height: 500px;">`;
+  for (let h=7;h<=20;h++) {
+    html += `<div class="grid grid-cols-8 border-b border-slate-100">`;
+    html += `<div class="p-2 text-xs text-slate-500 text-center border-r border-slate-100 bg-slate-50">${String(h).padStart(2,'0')}:00</div>`;
+
+    for (let i=0;i<7;i++) {
+      const d = new Date(weekStart); d.setDate(d.getDate()+i);
+      const ds = ymd(d);
+
+      const hourBookings = getFilteredBookings().filter(b => {
+        if (b.date !== ds) return false;
+        const sh = parseInt(b.start_time.split(':')[0],10);
+        return sh === h;
+      });
+
+      html += `
+        <div class="p-1 min-h-[60px] border-r border-slate-100 time-slot"
+             onclick="openBookingModal('${ds}', '${String(h).padStart(2,'0')}:00')">
+          ${hourBookings.map(b => `
+            <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')"
+                 class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs mb-1 cursor-pointer">
+              <div class="font-medium truncate">${b.title}</div>
+              <div class="text-slate-500">${b.start_time}-${b.end_time}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function renderDayView() {
+  const dateStr = ymd(currentDate);
+  const rooms = ['Mind Room','Reality Room','Power Room','Space Room'];
+  const filteredRooms = (currentRoomFilter === 'all') ? rooms : [currentRoomFilter];
+
+  let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">`;
+
+  html += `<div class="grid border-b border-slate-200 bg-slate-50" style="grid-template-columns: 60px repeat(${filteredRooms.length}, 1fr);">`;
+  html += `<div class="p-3 text-center text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
+
+  filteredRooms.forEach(room => {
+    html += `
+      <div class="p-3 text-center border-r border-slate-200">
+        <div class="flex items-center justify-center gap-2">
+          <span class="w-3 h-3 rounded-full ${roomColors[room].class}"></span>
+          <span class="font-medium text-slate-700">${room}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  html += `<div class="overflow-y-auto" style="max-height: 500px;">`;
+  for (let h=7;h<=20;h++) {
+    html += `<div class="grid border-b border-slate-100" style="grid-template-columns: 60px repeat(${filteredRooms.length}, 1fr);">`;
+    html += `<div class="p-2 text-xs text-slate-500 text-center border-r border-slate-100 bg-slate-50">${String(h).padStart(2,'0')}:00</div>`;
+
+    filteredRooms.forEach(room => {
+      const hourBookings = bookings.filter(b => {
+        if (b.date !== dateStr || b.room !== room) return false;
+        const sh = parseInt(b.start_time.split(':')[0],10);
+        return sh === h;
+      });
+
+      html += `
+        <div class="p-1 min-h-[60px] border-r border-slate-100 time-slot"
+             onclick="openBookingModal('${dateStr}', '${String(h).padStart(2,'0')}:00', '${room}')">
+          ${hourBookings.map(b => `
+            <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')"
+                 class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-2 py-1 rounded text-xs mb-1 cursor-pointer">
+              <div class="font-medium truncate">${b.title}</div>
+              <div class="text-slate-500">${b.start_time}-${b.end_time}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+/* ============================================================
+  NAV
+============================================================ */
+function navigateMonth(direction) {
+  if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() + direction);
+  else if (currentView === 'week') currentDate.setDate(currentDate.getDate() + direction*7);
+  else currentDate.setDate(currentDate.getDate() + direction);
+  renderCalendar();
+}
+function goToToday() { currentDate = new Date(); renderCalendar(); }
+function changeView(view) { currentView = view; renderCalendar(); }
+function filterByRoom(room) { currentRoomFilter = room; renderCalendar(); }
+
+/* ============================================================
+  DATE PICKER
+============================================================ */
+function toggleDatePicker() {
+  const picker = document.getElementById('date-picker');
+  picker.classList.toggle('hidden');
+  if (!picker.classList.contains('hidden')) updatePickerMonth();
+}
+function updatePickerMonth() {
+  const year = pickerDate.getFullYear();
+  const month = pickerDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDay = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+  const today = new Date();
+  const selectedDate = document.getElementById('booking-date').value;
+
+  document.getElementById('picker-month-label').textContent = `${thaiMonths[month]} ${year + 543}`;
+
+  let html = '';
+  for (let i = 0; i < startDay; i++) html += `<div class="date-picker-day other-month"></div>`;
+
+  for (let day=1; day<=totalDays; day++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+    const isSelected = selectedDate === dateStr;
+
+    let classes = 'date-picker-day';
+    if (isSelected) classes += ' selected';
+    if (isToday) classes += ' today';
+
+    html += `<button type="button" class="${classes}" onclick="selectDate('${dateStr}'); event.preventDefault();">${day}</button>`;
+  }
+
+  const remainingCells = (7 - ((startDay + totalDays) % 7)) % 7;
+  for (let i=0;i<remainingCells;i++) html += `<div class="date-picker-day other-month"></div>`;
+
+  document.getElementById('date-picker-grid').innerHTML = html;
+}
+function prevPickerMonth() { pickerDate.setMonth(pickerDate.getMonth()-1); updatePickerMonth(); }
+function nextPickerMonth() { pickerDate.setMonth(pickerDate.getMonth()+1); updatePickerMonth(); }
+function selectDate(dateStr) {
+  document.getElementById('booking-date').value = dateStr;
+  document.getElementById('booking-date-display').value = formatDateDisplay(dateStr);
+  document.getElementById('date-picker').classList.add('hidden');
+  checkConflict();
+}
+
+/* ============================================================
+  MODAL
+============================================================ */
+function openBookingModal(date=null, time=null, room=null) {
+  document.getElementById('modal-title').textContent = 'จองห้องประชุม';
+  document.getElementById('booking-form').reset();
+  document.getElementById('booking-id').value = '';
+  document.getElementById('conflict-warning').classList.add('hidden');
+  document.getElementById('date-picker').classList.add('hidden');
+
+  const d = date || new Date().toISOString().split('T')[0];
+  document.getElementById('booking-date').value = d;
+  document.getElementById('booking-date-display').value = formatDateDisplay(d);
+  pickerDate = new Date(d);
+
+  if (time) {
+    document.getElementById('booking-start').value = time;
+    const endHour = parseInt(time.split(':')[0],10) + 1;
+    document.getElementById('booking-end').value = `${String(endHour).padStart(2,'0')}:00`;
+  } else {
+    document.getElementById('booking-start').value = '09:00';
+    document.getElementById('booking-end').value = '10:00';
+  }
+
+  if (room) {
+    const radioBtn = document.querySelector(`input[name="room"][value="${room}"]`);
+    if (radioBtn) radioBtn.checked = true;
+  }
+
+  document.getElementById('booking-modal').classList.remove('hidden');
+  document.getElementById('booking-modal').classList.add('flex');
+
+  // preload bookings for that day to make conflict accurate
+  (async () => {
+    const rooms = (room ? [roomNameToKey[room]] : (currentRoomFilter==="all" ? ROOM_KEYS : [roomNameToKey[currentRoomFilter]])).filter(Boolean);
+    for (const rk of rooms) await loadBookingsFor(rk, d);
+    // update global list so conflict checks use newest cache
+    await refreshVisibleBookings();
+    checkConflict();
+  })();
+}
+
+function closeBookingModal() {
+  document.getElementById('booking-modal').classList.add('hidden');
+  document.getElementById('booking-modal').classList.remove('flex');
+  document.getElementById('date-picker').classList.add('hidden');
+}
+
+/* ============================================================
+  CONFLICT CHECK (ใช้ข้อมูล cache/visible)
+============================================================ */
+function checkConflict() {
+  const date = document.getElementById('booking-date').value;
+  const start = document.getElementById('booking-start').value;
+  const end = document.getElementById('booking-end').value;
+  const room = document.querySelector('input[name="room"]:checked')?.value;
+
+  if (!date || !start || !end || !room) {
+    document.getElementById('conflict-warning').classList.add('hidden');
+    return false;
+  }
+
+  const hasConflict = bookings.some(b => {
+    if (b.date !== date || b.room !== room) return false;
+    return (start < b.end_time && end > b.start_time);
+  });
+
+  document.getElementById('conflict-warning').classList.toggle('hidden', !hasConflict);
+  return hasConflict;
+}
+
+/* ============================================================
+  SUBMIT -> Backend createmeeting
+============================================================ */
+async function handleBookingSubmit(e) {
+  e.preventDefault();
+
+  if (checkConflict()) {
+    showToast('ไม่สามารถจองได้ เนื่องจากห้องถูกจองในช่วงเวลานี้แล้ว');
+    return;
+  }
+
+  const submitBtn = document.getElementById('submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="animate-spin">⏳</span> กำลังบันทึก...';
+
+  const bookerEmail = document.getElementById('booking-booker-email').value.trim();
+  const title = document.getElementById('booking-title').value.trim();
+  const room = document.querySelector('input[name="room"]:checked')?.value;
+  const date = document.getElementById('booking-date').value;
+  const startTime = document.getElementById('booking-start').value;
+  const endTime = document.getElementById('booking-end').value;
+  const attendees = document.getElementById('booking-attendees').value.trim();
+  const description = document.getElementById('booking-description').value.trim();
+
+  try {
+    if (!roomNameToKey[room]) throw new Error("INVALID_ROOM");
+    const roomKey = roomNameToKey[room];
+
+    const startIso = toLocalIso(date, startTime);
+    const endIso = toLocalIso(date, endTime);
+
+    const res = await apiJsonp("createmeeting", {
+      roomKey,
+      title,
+      start: startIso,
+      end: endIso,
+      attendees,
+      description,
+      bookerEmail
+    });
+
+    if (!res || !res.ok) {
+      const msg = res?.error ? `จองไม่สำเร็จ: ${res.error}` : 'จองไม่สำเร็จ';
+      showToast(msg);
+    } else {
+      showToast('จองห้องประชุมเรียบร้อย');
+      // clear cache for that room+date and reload
+      bookingsCache.delete(`${roomKey}|${date}`);
+      await refreshVisibleBookings();
+      renderCalendar();
       closeBookingModal();
     }
+  } catch (err) {
+    showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
 
-    // View booking
-    function viewBooking(id) {
-      const booking = bookings.find(b => b.__backendId === id);
-      if (!booking) return;
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = 'บันทึก';
+}
 
-      selectedBooking = booking;
+/* ============================================================
+  VIEW BOOKING (อ่านจาก state อย่างเดียว)
+============================================================ */
+function viewBooking(id) {
+  const b = bookings.find(x => x.__backendId === id);
+  if (!b) return;
 
-      const header = document.getElementById('view-modal-header');
-      header.className = `p-6 rounded-t-2xl ${roomColors[booking.room]?.class || 'bg-slate-600'}`;
+  selectedBooking = b;
 
-      document.getElementById('view-title').textContent = booking.title;
-      document.getElementById('view-room').textContent = booking.room;
-      
-      const dateObj = new Date(booking.date);
-      document.getElementById('view-date').textContent = `${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${dateObj.getFullYear() + 543}`;
-      document.getElementById('view-time').textContent = `${booking.start_time} - ${booking.end_time}`;
+  const info = [
+    `ห้อง: ${b.room}`,
+    `วันที่: ${formatDateDisplay(b.date)}`,
+    `เวลา: ${b.start_time} - ${b.end_time}`,
+    b.department ? `แผนก: ${b.department}` : '',
+    b.booker ? `ผู้จอง: ${b.booker}` : '',
+    b.attendees ? `ผู้เข้าร่วม: ${b.attendees}` : '',
+    b.description ? `รายละเอียด: ${b.description}` : ''
+  ].filter(Boolean).join('\n');
 
-      // Recurrence
-      const recurrenceContainer = document.getElementById('view-recurrence-container');
-      if (booking.recurrence_type && booking.recurrence_type !== 'none') {
-        recurrenceContainer.classList.remove('hidden');
-        document.getElementById('view-recurrence').textContent = recurrenceLabels[booking.recurrence_type] || booking.recurrence_type;
-        document.getElementById('delete-all-btn').classList.remove('hidden');
-      } else {
-        recurrenceContainer.classList.add('hidden');
-        document.getElementById('delete-all-btn').classList.add('hidden');
-      }
+  alert(`${b.title}\n\n${info}`);
+}
 
-      // Attendees
-      const attendeesContainer = document.getElementById('view-attendees-container');
-      if (booking.attendees) {
-        attendeesContainer.classList.remove('hidden');
-        document.getElementById('view-attendees').textContent = booking.attendees;
-      } else {
-        attendeesContainer.classList.add('hidden');
-      }
+/* ============================================================
+  INIT
+============================================================ */
+async function init() {
+  initTimeSelects();
 
-      // Description
-      const descContainer = document.getElementById('view-description-container');
-      if (booking.description) {
-        descContainer.classList.remove('hidden');
-        document.getElementById('view-description').textContent = booking.description;
-      } else {
-        descContainer.classList.add('hidden');
-      }
+  // bind events
+  document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+  ['booking-date', 'booking-start', 'booking-end'].forEach(id => {
+    document.getElementById(id).addEventListener('change', checkConflict);
+  });
+  document.querySelectorAll('input[name="room"]').forEach(input => input.addEventListener('change', checkConflict));
 
-      hideDeleteConfirm();
-      document.getElementById('view-modal').classList.remove('hidden');
-      document.getElementById('view-modal').classList.add('flex');
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.relative')) {
+      document.getElementById('date-picker').classList.add('hidden');
     }
+  });
 
-    // Close view modal
-    function closeViewModal() {
-      document.getElementById('view-modal').classList.add('hidden');
-      document.getElementById('view-modal').classList.remove('flex');
-      selectedBooking = null;
+  // ping backend
+  const statusEl = document.getElementById("api-status");
+  try {
+    const ping = await apiJsonp("ping", {});
+    if (ping && ping.ok) {
+      statusEl.textContent = `เชื่อมต่อแล้ว • TZ: ${ping.tz || ''} • SheetTZ: ${ping.spreadsheetTimeZone || ''}`;
+      statusEl.className = "text-[11px] text-emerald-600 mt-0.5";
+    } else {
+      statusEl.textContent = `เชื่อมต่อไม่สำเร็จ (API KEY/Deploy?)`;
+      statusEl.className = "text-[11px] text-red-600 mt-0.5";
     }
+  } catch(e) {
+    statusEl.textContent = `เชื่อมต่อไม่สำเร็จ (Network/CORS/Deploy)`;
+    statusEl.className = "text-[11px] text-red-600 mt-0.5";
+  }
 
-    // Edit booking
-    function editBooking() {
-      if (!selectedBooking) return;
+  renderCalendar();
+}
 
-      isEditing = true;
-      closeViewModal();
-      
-      document.getElementById('modal-title').textContent = 'แก้ไขการจอง';
-      document.getElementById('booking-id').value = selectedBooking.__backendId;
-      document.getElementById('booking-title').value = selectedBooking.title;
-      document.getElementById('booking-date').value = selectedBooking.date;
-      document.getElementById('booking-date-display').value = formatDateDisplay(selectedBooking.date);
-      document.getElementById('booking-start').value = selectedBooking.start_time;
-      document.getElementById('booking-end').value = selectedBooking.end_time;
-      document.getElementById('booking-attendees').value = selectedBooking.attendees || '';
-      document.getElementById('booking-description').value = selectedBooking.description || '';
-      
-      const roomRadio = document.querySelector(`input[name="room"][value="${selectedBooking.room}"]`);
-      if (roomRadio) roomRadio.checked = true;
-
-      // Hide recurrence for editing
-      document.getElementById('recurrence-type').value = 'none';
-      document.getElementById('recurrence-end-container').classList.add('hidden');
-
-      document.getElementById('booking-modal').classList.remove('hidden');
-      document.getElementById('booking-modal').classList.add('flex');
-    }
-
-    // Show delete confirm
-    function showDeleteConfirm() {
-      document.getElementById('delete-confirm').classList.remove('hidden');
-      document.getElementById('delete-btn').classList.add('hidden');
-    }
-
-    // Hide delete confirm
-    function hideDeleteConfirm() {
-      document.getElementById('delete-confirm').classList.add('hidden');
-      document.getElementById('delete-btn').classList.remove('hidden');
-    }
-
-    // Delete booking
-    async function deleteBooking(mode) {
-      if (!selectedBooking) return;
-
-      const buttons = document.querySelectorAll('#delete-options button');
-      buttons.forEach(btn => {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="animate-spin">⏳</span> กำลังลบ...';
-      });
-
-      try {
-        if (mode === 'all' && selectedBooking.recurrence_group_id) {
-          // Delete all in group
-          const groupBookings = bookings.filter(b => b.recurrence_group_id === selectedBooking.recurrence_group_id);
-          for (const b of groupBookings) {
-            await window.dataSdk.delete(b);
-          }
-          showToast(`ลบการจองซ้ำทั้งหมด ${groupBookings.length} รายการเรียบร้อย`);
-        } else {
-          // Delete single
-          const result = await window.dataSdk.delete(selectedBooking);
-          if (result.isOk) {
-            showToast('ลบการจองเรียบร้อย');
-          } else {
-            showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
-          }
-        }
-      } catch (error) {
-        showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
-      }
-
-      closeViewModal();
-    }
-
-    // Show toast
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-message').textContent = message;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
-    }
-
-    // Initialize on load
-    init();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd0f2bef5067331',t:'MTc3MDk1MDI5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+init();
+</script>
+</body>
 </html>
