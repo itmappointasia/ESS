@@ -2,1230 +2,1648 @@
 <html lang="th">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ESS - Meeting Rooms</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Meeting Room Booking</title>
+
   <style>
     :root{
-      --bg:#ffffff;
+      --bg:#eaf7f6;
       --card:#ffffff;
-      --card2:#f6f8fc;
-      --ink:#0f172a;
-      --muted:#64748b;
-      --line:rgba(15,23,42,.12);
-      --primary:#2563eb;
-      --primary2:#1d4ed8;
-      --danger:#dc2626;
-      --warn:#d97706;
-      --ok:#16a34a;
-      --shadow:0 18px 60px rgba(15,23,42,.10);
+      --ink:#0b2b2a;
+      --muted:#5b7b7a;
+      --line:rgba(11,43,42,.10);
+
+      --brand:#0f8f86;
+      --brand2:#0aa39a;
+
+      --ok:#1fbf72;
+      --ok-bg:#d8f7e8;
+
+      --bad:#e85a5a;
+      --bad-bg:#fde0e0;
+
+      --shadow: 0 16px 45px rgba(10, 30, 30, .10);
       --r:18px;
 
-      /* Layout tuning */
-      --wrap-max: 1100px;
-      --wrap-pad-x: 26px;
-      --wrap-pad-y: 34px;
+      --max:1180px;
 
-      /* Grid gaps */
-      --rooms-gap-x: 46px;
-      --rooms-gap-y: 36px;
-
-      /* Breakpoints tuned for 1920 @ 150% (~1280px CSS width) */
-      --bp-zoom150: 1400px;  /* <=1400px => treat as "150% zone" for laptop */
-      --bp-tablet: 980px;
-      --bp-mobile: 720px;
+      --chip:#eef8f7;
+      --chip-line:#cfe9e6;
+      --focus:rgba(15,143,134,.16);
     }
+
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      background: var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background:var(--bg);
       color:var(--ink);
     }
 
-    /* Keep centered and readable (1100-1200 target) */
     .wrap{
-      max-width: var(--wrap-max);
+      max-width:var(--max);
       margin:0 auto;
-      padding: var(--wrap-pad-y) var(--wrap-pad-x);
+      padding:24px 16px 40px;
     }
 
-    .top{
+    /* Header */
+    .hero{
+      text-align:center;
+      padding:22px 12px 16px;
+    }
+    .hero h1{
+      margin:0;
+      font-weight:900;
+      letter-spacing:.2px;
+      color:#0c6f68;
+      font-size: clamp(28px, 3vw, 44px);
+    }
+    .hero .sub{
+      margin-top:6px;
+      color:#2a7f79;
+      font-weight:700;
+      font-size: clamp(14px, 1.4vw, 18px);
+    }
+
+    /* Tabs */
+    .tabs{
+      margin:14px auto 18px;
       display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:22px;
-
-      /* Requirement: at 150% still one row */
-      flex-wrap: nowrap;
+      justify-content:center;
+      gap:28px;
+      border-bottom: 1px solid rgba(11,43,42,.12);
+      padding-bottom:10px;
     }
-    .brandRow{
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      min-width: 0;
-    }
-    .brandLogo{
-      width:64px;height:64px;object-fit:contain;
-      border-radius:14px;background:#fff;
-      flex:0 0 auto;
-    }
-
-    .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;
-      font-size:12px;color:var(--muted);
-      box-shadow:0 6px 18px rgba(15,23,42,.06);
-      margin-top:8px;
-      flex:0 0 auto;
-
-      /* Prevent shrinking/overlap in top bar */
-      white-space:nowrap;
-    }
-    .dot{width:9px;height:9px;border-radius:50%}
-    .dot.ok{background:var(--ok)}
-    .dot.no{background:var(--danger)}
-
-    /* ROOMS GRID */
-    .rooms{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr); /* default: 2 cols */
-      gap: var(--rooms-gap-y) var(--rooms-gap-x);
-      align-items:stretch;
-      margin-top:8px;
-    }
-
-    /* Tablet-ish: tighter padding/gaps but keep layout logic */
-    @media (max-width: 980px){
-      .wrap{padding:22px 16px}
-      .rooms{gap:22px 18px}
-    }
-
-    /* KEY: Force 1 column in "150% zone" for 1920-based laptops (~1280px width) */
-    @media (max-width: 1400px){
-      .rooms{grid-template-columns:1fr;}
-    }
-
-    /* Mobile */
-    @media (max-width: 720px){
-      /* requirement: top bar 150% still one row; but for real mobile we must stack */
-      .top{flex-direction:column;align-items:flex-start;flex-wrap:wrap}
-      .badge{margin-top:0}
-      .rooms{grid-template-columns:1fr}
-    }
-
-    .roomCard{
-      position:relative;
-      background:#fff;
-      border-radius:22px;
+    .tab{
+      appearance:none;
+      border:0;
+      background:transparent;
+      color:rgba(11,43,42,.70);
+      font-weight:800;
+      font-size:16px;
+      padding:10px 10px 12px;
       cursor:pointer;
-      padding:16px;
-      transition:.16s ease;
-      box-shadow:0 14px 44px rgba(15,23,42,.07);
-      overflow:hidden;
-      border:2.5px solid rgba(var(--accent-rgb), 1);
-
-      /* allow height to grow by content */
-      min-height: 0;
+      position:relative;
     }
-    .roomCard:hover{transform:translateY(-2px)}
-    .tileInner{
-      border-radius:18px;
-      height:100%;
+    .tab.active{
+      color:#0b6f69;
+    }
+    .tab.active::after{
+      content:"";
+      position:absolute;
+      left:0; right:0; bottom:-11px;
+      height:3px;
+      border-radius:99px;
+      background:var(--brand);
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .sectionTitle{
+      margin:0 0 12px;
+      font-weight:900;
+      color:#0b6f69;
+      font-size: 20px;
+    }
+
+    .row{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:end;
+    }
+    .field{
+      min-width: 240px;
+      flex:1;
+    }
+    .label{
+      display:block;
+      font-weight:800;
+      color:#356a66;
+      font-size:14px;
+      margin:0 0 8px;
+    }
+    .input, .select{
+      width:100%;
+      height:46px;
+      border-radius:12px;
+      border:1px solid rgba(11,43,42,.14);
+      background:#fff;
+      padding:0 12px;
+      outline:none;
+      font-weight:700;
+      color:#0b2b2a;
+    }
+    .input:focus, .select:focus{
+      box-shadow: 0 0 0 6px var(--focus);
+      border-color: rgba(15,143,134,.45);
+    }
+    .btn{
+      height:46px;
+      padding:0 16px;
+      border-radius:12px;
+      border:1px solid rgba(11,43,42,.12);
+      background:var(--brand);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: 0 10px 24px rgba(15,143,134,.18);
+    }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .btn.secondary{
+      background:#e7f4f2;
+      color:#0b6f69;
+      border-color:#cfe9e6;
+      box-shadow:none;
+    }
+
+    /* Booking page layout */
+    .grid2{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap:16px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){
+      .grid2{ grid-template-columns:1fr; }
+      .field{ min-width: 100%; }
+    }
+
+    /* Calendar */
+    .cal{
+      border:1px solid rgba(11,43,42,.10);
+      border-radius:16px;
+      padding:14px;
+      background:linear-gradient(180deg, rgba(15,143,134,.06), rgba(15,143,134,.02));
+    }
+    .calHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .calTitle{
+      font-weight:900;
+      color:#0b6f69;
+      font-size:18px;
+    }
+    .calNav{
+      display:flex;
+      gap:8px;
+    }
+    .iconBtn{
+      width:40px; height:40px;
+      border-radius:12px;
+      border:1px solid rgba(11,43,42,.12);
+      background:#fff;
+      cursor:pointer;
+      font-weight:900;
+      color:#0b6f69;
+    }
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+      margin:8px 0 10px;
+      color:rgba(11,43,42,.50);
+      font-weight:900;
+      font-size:12px;
+      text-align:center;
+    }
+    .days{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+    }
+    .day{
+      height:44px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background:#fff;
+      cursor:pointer;
+      font-weight:900;
+      color:#0b2b2a;
+    }
+    .day.muted{
+      opacity:.35;
+      cursor:default;
+    }
+    .day.today{
+      border-color: rgba(15,143,134,.25);
+    }
+    .day.sel{
+      background: var(--brand);
+      color:#fff;
+      box-shadow: 0 10px 24px rgba(15,143,134,.20);
+    }
+
+    /* Rooms + slots */
+    .roomsWrap{
+      border:1px solid rgba(11,43,42,.10);
+      border-radius:16px;
       padding:14px;
       background:#fff;
+    }
+    .roomsHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .roomsHead h3{
+      margin:0;
+      font-size:16px;
+      color:#0b6f69;
+      font-weight:900;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      background:var(--chip);
+      border:1px solid var(--chip-line);
+      color:#0b6f69;
+      font-weight:900;
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .roomsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .roomsGrid{ grid-template-columns:1fr; }
+    }
+    .roomCard{
+      border:1px solid rgba(11,43,42,.10);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+    .roomName{
+      font-weight:1000;
+      color:#0b6f69;
+      font-size:18px;
+      margin:0;
+    }
+    .roomMeta{
+      margin-top:4px;
+      color:rgba(11,43,42,.55);
+      font-weight:800;
+      font-size:13px;
+    }
+    .slots{
+      margin-top:10px;
       display:flex;
       flex-direction:column;
-      gap:14px;
-      min-height: 0;
+      gap:10px;
     }
-    .tileTop{
+    .slot{
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
-      gap:12px;
-      min-width: 0;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(11,43,42,.10);
+      background:#f6fbfa;
+      cursor:pointer;
     }
-    .titlePill{
+    .slot:hover{ border-color: rgba(15,143,134,.22); }
+    .slotTime{
+      font-weight:1000;
+      color:#0b2b2a;
+    }
+    .slotSub{
+      font-weight:800;
+      color:rgba(11,43,42,.55);
+      font-size:12px;
+      margin-top:2px;
+    }
+    .slot.bad{
+      background: var(--bad-bg);
+      border-color: rgba(232,90,90,.35);
+      cursor:default;
+    }
+    .slot.ok{
+      background: var(--ok-bg);
+      border-color: rgba(31,191,114,.35);
+    }
+    .tag{
       display:inline-flex;
       align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      border:2px solid rgba(var(--accent-rgb), 1);
-      background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.06);
-      font-weight:900;
-      color:#111827;
-      line-height:1.05;
-      font-size:18px;
-      max-width:70%;
-      min-width: 0;
+      gap:8px;
+      font-weight:1000;
+      white-space:nowrap;
     }
-    .titlePill .stack{display:flex;flex-direction:column;gap:2px}
-    .stoneIcon{
-      width:64px;height:64px;object-fit:contain;
-      flex:0 0 auto;margin-top:2px
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background:var(--ok);
+      box-shadow: 0 0 0 6px rgba(31,191,114,.12);
     }
-    .bulletBox{
-      border-radius:16px;
-      border:2px solid rgba(var(--accent-rgb), 1);
-      padding:12px 14px;
-      background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.05);
-      margin-top:auto;
-      min-height: 0;
-    }
-    .bulletBox ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px}
-    .bulletBox li{color:#0f172a;font-size:14px;line-height:1.25}
-    .bulletBox b{font-weight:950}
+    .dot.bad{ background:var(--bad); box-shadow: 0 0 0 6px rgba(232,90,90,.12); }
 
     /* Modal */
-    .modalOverlay{
-      position:fixed;inset:0;
-      background:rgba(2,6,23,.42);
+    .backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.38);
       display:none;
-      align-items:center;justify-content:center;
+      align-items:center;
+      justify-content:center;
       padding:16px;
       z-index:50;
     }
+    .backdrop.show{ display:flex; }
     .modal{
-      width:min(980px, 100%);
-      background:#ffffff;
-      border:1px solid rgba(15,23,42,.14);
-      border-radius:22px;
-      box-shadow:0 40px 120px rgba(15,23,42,.28);
+      width:min(880px, 100%);
+      border-radius:20px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow: 0 25px 90px rgba(0,0,0,.25);
       overflow:hidden;
     }
-    .modalHeader{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      padding:14px 16px;border-bottom:1px solid rgba(15,23,42,.10);
-      background:#fbfcff;
-      min-width:0;
-    }
-    .modalTitle{font-weight:900;color:var(--ink)}
-    .hint{font-size:12px;color:var(--muted)}
-    .modalBody{padding:14px 16px}
-    .modalFooter{
-      padding:14px 16px;border-top:1px solid rgba(15,23,42,.10);
-      display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
-      background:#fbfcff;
-    }
-    .xbtn{
-      border:1px solid rgba(15,23,42,.12);
-      background:#fff;
-      color:var(--ink);
-      border-radius:14px;
-      padding:8px 10px;
-      cursor:pointer;
-      font-weight:900;
-      flex:0 0 auto;
-    }
-    .xbtn:hover{background:#f3f6ff}
-
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width: 820px){ .grid2{grid-template-columns:1fr} }
-
-    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
-    input,select,textarea{
-      width:100%;
-      padding:10px 10px;
-      border:1px solid rgba(15,23,42,.12);
-      border-radius:14px;
-      font-size:14px;
-      outline:none;
-      background:#fff;
-      color:var(--ink);
-    }
-    textarea{min-height:92px;resize:vertical}
-    input:focus,select:focus,textarea:focus{
-      border-color:rgba(37,99,235,.55);
-      box-shadow:0 0 0 4px rgba(37,99,235,.14);
-    }
-
-    .btn{
-      appearance:none;border:0;border-radius:14px;
-      padding:10px 14px;
-      cursor:pointer;
-      font-weight:900;
-      background:var(--primary);
-      color:white;
-    }
-    .btn:hover{background:var(--primary2)}
-    .btn.ghost{
-      background:#ffffff;
-      border:1px solid rgba(15,23,42,.14);
-      color:var(--ink);
-    }
-    .btn.ghost:hover{background:#f3f6ff}
-
-    /* LIST (Room bookings) */
-    .list{
-      border:1px solid rgba(15,23,42,.12);
-      border-radius:18px;
-      overflow:hidden;
-      background:#fff;
-    }
-    .listHead,.listRow{
-      display:grid;
-      grid-template-columns: 140px 1fr 200px 1fr;
-      gap:10px;
-      padding:10px 12px;
+    .modalHead{
+      padding:14px 16px;
+      display:flex;
       align-items:center;
-      min-width:0;
+      justify-content:space-between;
+      gap:10px;
+      background: linear-gradient(90deg, rgba(15,143,134,.12), rgba(15,143,134,.04));
+      border-bottom:1px solid rgba(11,43,42,.10);
     }
-    .listHead{
-      background:#f7f9fd;
-      color:var(--muted);
-      font-size:12px;
-      font-weight:800;
-      border-bottom:1px solid rgba(15,23,42,.10);
+    .modalHead .ttl{
+      font-weight:1000;
+      color:#0b6f69;
     }
-    .listRow{
-      border-bottom:1px solid rgba(15,23,42,.08);
-      font-size:13px;
-      color:var(--ink);
+    .close{
+      width:40px;height:40px;border-radius:12px;
+      border:1px solid rgba(11,43,42,.12);
       background:#fff;
+      cursor:pointer;
+      font-weight:1000;
+      color:#0b6f69;
     }
-    .listRow:last-child{border-bottom:0}
-
-    /* 150% / narrow desktop: stacked 2 rows (time+title / dept+booker) */
-    @media (max-width: 1400px){
-      .listHead{display:none;} /* stacked view doesn't need header; cleaner */
-      .listRow{
-        grid-template-columns: 140px 1fr;
-        grid-template-areas:
-          "time title"
-          "dept booker";
-        row-gap:8px;
-        column-gap:10px;
-        align-items:start;
-      }
-      /* Force the 4 cells to map into areas (depends on current DOM order: time, title, dept, booker) */
-      .listRow > :nth-child(1){grid-area:time;}
-      .listRow > :nth-child(2){grid-area:title;}
-      .listRow > :nth-child(3){grid-area:dept;}
-      .listRow > :nth-child(4){grid-area:booker;}
-
-      .listRow > :nth-child(2),
-      .listRow > :nth-child(3),
-      .listRow > :nth-child(4){
-        min-width:0;
-        word-break:break-word;
-      }
-    }
-
-    /* Mobile requirement: keep 4 columns but allow horizontal scroll */
-    @media (max-width: 720px){
-      .list{
-        overflow-x:auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .listHead,.listRow{
-        display:grid;
-        grid-template-columns: 140px 1fr 200px 1fr;
-        min-width: 760px; /* enables scroll; keeps columns readable */
-      }
-      .listHead{display:grid;} /* show header again on mobile scroll layout */
-    }
-
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(15,23,42,.12);
-      background:rgba(15,23,42,.03);
-      font-size:12px;
-      color:var(--muted);
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+    .modalBody{ padding:16px; }
+    .hint{
+      margin:0 0 12px;
+      color:rgba(11,43,42,.65);
+      font-weight:800;
+      font-size:13px;
     }
 
     .chips{
-      display:flex;flex-wrap:wrap;gap:8px;
-      border:1px solid rgba(15,23,42,.12);
-      border-radius:16px;
-      padding:10px;
-      background:#ffffff;
-      min-height:46px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
     }
     .chip{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:7px 10px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
       border-radius:999px;
-      border:1px solid rgba(37,99,235,.22);
-      background:rgba(37,99,235,.08);
+      border:1px solid rgba(11,43,42,.12);
+      background:#fff;
+      font-weight:900;
+      color:#0b2b2a;
       font-size:12px;
-      color:var(--ink);
     }
-    .chip .x{
-      width:18px;height:18px;border-radius:999px;
-      display:inline-flex;align-items:center;justify-content:center;
-      border:1px solid rgba(15,23,42,.14);
+    .chip button{
+      border:0;
+      background:transparent;
       cursor:pointer;
-      user-select:none;
+      font-weight:1000;
+      color:#0b6f69;
+    }
+
+    .okBox{
+      margin-top:12px;
+      border-radius:16px;
+      border:1px solid rgba(31,191,114,.30);
+      background: rgba(31,191,114,.10);
+      padding:14px;
+    }
+    .okBox .big{
+      font-weight:1000;
+      color:#0f7a4a;
+      margin:0 0 6px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    /* Table (Bookings list) */
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid rgba(11,43,42,.10);
       background:#fff;
     }
-    .chip .x:hover{background:#eef2ff}
-
-    pre{
-      margin:12px 0 0;
-      background:#ffffff;
-      border:1px solid rgba(15,23,42,.12);
-      border-radius:16px;
-      padding:12px;
-      color:#0f172a;
-      overflow:auto;
-      min-height:120px;
-      font-size:12px;
-      box-shadow:0 10px 26px rgba(15,23,42,.06);
+    thead th{
+      text-align:left;
+      padding:12px 12px;
+      background: rgba(15,143,134,.06);
+      color:#0b6f69;
+      font-weight:1000;
+      font-size:13px;
+      border-bottom:1px solid rgba(11,43,42,.10);
     }
-    #log{display:none;}
+    tbody td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(11,43,42,.08);
+      font-weight:800;
+      color:#0b2b2a;
+      vertical-align:top;
+    }
+    tbody tr:last-child td{ border-bottom:0; }
+    .dangerBtn{
+      height:36px;
+      padding:0 12px;
+      border-radius:10px;
+      border:0;
+      background: var(--bad);
+      color:#fff;
+      font-weight:1000;
+      cursor:not-allowed;
+      opacity:.65;
+    }
+    .small{
+      font-size:12px;
+      color:rgba(11,43,42,.55);
+      font-weight:800;
+      margin-top:4px;
+    }
+
+    /* Stats */
+    .statsRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width: 980px){
+      .statsRow{ grid-template-columns:1fr; }
+    }
+    .statCard{
+      border-radius:16px;
+      border:1px solid rgba(11,43,42,.10);
+      background:#fff;
+      padding:14px;
+    }
+    .statLabel{
+      color:rgba(11,43,42,.55);
+      font-weight:900;
+      font-size:13px;
+      margin:0 0 8px;
+    }
+    .statValue{
+      font-weight:1000;
+      font-size:34px;
+      margin:0;
+    }
+    .chartWrap{
+      margin-top:12px;
+      border-radius:16px;
+      border:1px solid rgba(11,43,42,.10);
+      background:#fff;
+      padding:14px;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#0b2b2a;
+      color:#fff;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:900;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index:80;
+    }
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-6px);
+    }
+
+    /* Loader */
+    .busy{
+      display:inline-flex; align-items:center; gap:10px;
+      font-weight:900; color:#0b6f69;
+    }
+    .spin{
+      width:16px; height:16px; border-radius:99px;
+      border:3px solid rgba(15,143,134,.25);
+      border-top-color: rgba(15,143,134,.90);
+      animation: r 0.8s linear infinite;
+    }
+    @keyframes r{ to { transform: rotate(360deg); } }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <div class="top">
-      <div class="brandRow" aria-label="Brand">
-        <img class="brandLogo" id="brandLogo" src="MLS Logo.png" alt="MapPointAsia Logo"
-             onerror="this.style.display='none'">
-      </div>
-
-      <div class="badge">
-        <span class="dot no" id="statusDot"></span>
-        <span id="statusText">Loading…</span>
-      </div>
+    <div class="hero">
+      <h1>Smart Meeting Room Booking</h1>
+      <div class="sub">ระบบจองห้องประชุมอัจฉริยะ</div>
     </div>
 
-    <div class="rooms" id="rooms"></div>
-    <pre id="log" hidden></pre>
-  </div>
-
-  <!-- Modal: Room status -->
-  <div class="modalOverlay" id="mRoom">
-    <div class="modal">
-      <div class="modalHeader">
-        <div>
-          <div class="modalTitle" id="mRoomTitle">Room</div>
-          <div class="hint" id="mRoomSub">ดูการจองตามวัน</div>
-        </div>
-        <button class="xbtn" id="mRoomClose">✕</button>
-      </div>
-      <div class="modalBody">
-        <div class="grid2">
-          <div>
-            <label>เลือกวันที่</label>
-            <input type="date" id="mRoomDate">
-            <div class="hint">แสดงเป็น วว/ดด/ปี(ค.ศ.) ใน UI และส่งเป็น YYYY-MM-DD</div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-end;justify-content:flex-end">
-            <button class="btn ghost" id="mRoomRefresh">รีเฟรชรายการ</button>
-            <button class="btn" id="mRoomBookBtn">จองห้องนี้</button>
-          </div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="list" id="mRoomList">
-          <div class="listHead">
-            <div>เวลา</div>
-            <div>หัวข้อ</div>
-            <div>แผนก</div>
-            <div>ผู้จอง</div>
-          </div>
-          <div id="mRoomRows"></div>
-        </div>
-      </div>
-      <div class="modalFooter">
-        <button class="btn ghost" id="mRoomClose2">ปิด</button>
-      </div>
+    <div class="tabs" role="tablist" aria-label="tabs">
+      <button class="tab active" data-tab="book" role="tab">จองห้องประชุม</button>
+      <button class="tab" data-tab="list" role="tab">รายการจองของฉัน</button>
+      <button class="tab" data-tab="stats" role="tab">สถิติการใช้งาน</button>
     </div>
-  </div>
 
-  <!-- Modal: Booking form -->
-  <div class="modalOverlay" id="mBook">
-    <div class="modal">
-      <div class="modalHeader">
-        <div>
-          <div class="modalTitle" id="mBookTitle">จองห้อง</div>
-          <div class="hint" id="mBookRoomHint">-</div>
-        </div>
-        <button class="xbtn" id="mBookClose">✕</button>
-      </div>
-      <div class="modalBody">
+    <!-- BOOK TAB -->
+    <section id="tab-book">
+      <div class="card">
+        <h2 class="sectionTitle">1. เลือกวันที่ต้องการจอง</h2>
+
         <div class="grid2">
-          <div>
-            <label>วันที่ (วว/ดด/ปี ค.ศ.)</label>
-            <input type="date" id="bkDate">
-          </div>
-          <div>
-            <label>ช่วงเวลา</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div>
-                <select id="bkStart"></select>
-                <div class="hint">เริ่ม</div>
+          <div class="cal" id="calendar"></div>
+
+          <div class="roomsWrap">
+            <div class="roomsHead">
+              <h3 id="dayTitle">รายการจองห้องประชุมวันนี้</h3>
+              <span class="pill" id="serverPill">เชื่อมต่อระบบ…</span>
+            </div>
+
+            <div class="row" style="margin-bottom:12px">
+              <div class="field">
+                <span class="label">อีเมลผู้จอง (จำเป็น)</span>
+                <input class="input" id="bookerEmail" placeholder="เช่น user@company.com" autocomplete="email" />
               </div>
-              <div>
-                <select id="bkEnd"></select>
-                <div class="hint">สิ้นสุด</div>
+              <div class="field">
+                <span class="label">ค้นหาพนักงาน/ผู้ร่วมประชุม</span>
+                <input class="input" id="empSearch" placeholder="พิมพ์ชื่อหรืออีเมล แล้วกด Enter" />
+                <div class="chips" id="chips"></div>
               </div>
             </div>
-          </div>
 
-          <div>
-            <label>แผนก (Department)</label>
-            <select id="bkDept"></select>
-            <div class="hint">ถ้าไม่เลือกแผนก → ชื่อผู้จองจะไม่ให้เลือก</div>
-          </div>
-
-          <div>
-            <label>ชื่อผู้จอง (Name)</label>
-            <select id="bkName" disabled></select>
-            <div class="hint">รายชื่อจะเป็นเฉพาะพนักงานในแผนกนั้น</div>
-          </div>
-
-          <div style="grid-column:1/-1">
-            <label>อีเมลผู้จอง (Auto)</label>
-            <input id="bkEmail" disabled placeholder="เลือกชื่อผู้จองแล้วจะแสดงอีเมลอัตโนมัติ">
-          </div>
-
-          <div style="grid-column:1/-1">
-            <label>รายละเอียดการประชุม</label>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button class="btn ghost" id="btnDetails" type="button">เพิ่มรายละเอียดการประชุม</button>
-              <button class="btn ghost" id="btnMembers" type="button">เพิ่มสมาชิกการประชุม</button>
-              <span class="pill" id="pillDetails">หัวข้อ: ยังไม่ระบุ</span>
-              <span class="pill" id="pillMembers">สมาชิก: 0 คน</span>
+            <div class="row" style="margin-bottom:12px">
+              <div class="field">
+                <span class="label">เวลาเริ่มต้น</span>
+                <select class="select" id="startTime"></select>
+              </div>
+              <div class="field">
+                <span class="label">เวลาสิ้นสุด (จองได้ไม่เกิน 4 ชั่วโมง)</span>
+                <select class="select" id="endTime"></select>
+              </div>
+              <div>
+                <button class="btn secondary" id="refreshBtn">รีเฟรชสถานะห้อง</button>
+              </div>
             </div>
-            <div class="hint">หัวข้อประชุมบังคับต้องกรอก (required)</div>
-          </div>
 
-          <div style="grid-column:1/-1">
-            <label>สมาชิกที่เข้าร่วม (สรุป)</label>
-            <div class="chips" id="membersChips"></div>
-            <div class="hint">ระบบจะส่งเป็นอีเมลคั่นด้วย comma ไปยัง Bookings</div>
-          </div>
-        </div>
-
-        <pre id="bkLog"></pre>
-      </div>
-
-      <div class="modalFooter">
-        <button class="btn ghost" id="mBookCancel">ยกเลิก</button>
-        <button class="btn" id="mBookSave">บันทึกการจอง</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Meeting details -->
-  <div class="modalOverlay" id="mDetails">
-    <div class="modal">
-      <div class="modalHeader">
-        <div>
-          <div class="modalTitle">รายละเอียดการประชุม</div>
-          <div class="hint">กดบันทึกแล้วปิด pop-up ทันที</div>
-        </div>
-        <button class="xbtn" id="mDetailsClose">✕</button>
-      </div>
-      <div class="modalBody">
-        <div class="grid2">
-          <div style="grid-column:1/-1">
-            <label>หัวข้อการประชุม (บังคับ)</label>
-            <input id="dtTitle" placeholder="ใส่หัวข้อการประชุม">
-          </div>
-          <div style="grid-column:1/-1">
-            <label>รายละเอียดการประชุม</label>
-            <textarea id="dtDesc" placeholder="ใส่รายละเอียดเพิ่มเติม"></textarea>
+            <div class="roomsGrid" id="roomsGrid"></div>
           </div>
         </div>
       </div>
-      <div class="modalFooter">
-        <button class="btn ghost" id="mDetailsCancel">ยกเลิก</button>
-        <button class="btn" id="mDetailsSave">บันทึก</button>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Modal: Members picker -->
-  <div class="modalOverlay" id="mMembers">
-    <div class="modal">
-      <div class="modalHeader">
-        <div>
-          <div class="modalTitle">เพิ่มสมาชิกการประชุม</div>
-          <div class="hint">เลือกแผนก → เลือกสมาชิก → บันทึกสมาชิกแล้วปิด</div>
-        </div>
-        <button class="xbtn" id="mMembersClose">✕</button>
-      </div>
-      <div class="modalBody">
-        <div class="grid2">
-          <div>
-            <label>แผนก</label>
-            <select id="mbDept"></select>
+    <!-- LIST TAB -->
+    <section id="tab-list" style="display:none">
+      <div class="card">
+        <h2 class="sectionTitle">รายการจองของฉัน</h2>
+
+        <div class="row" style="margin-bottom:12px">
+          <div class="field">
+            <span class="label">กรองตามห้อง</span>
+            <select class="select" id="filterRoom">
+              <option value="">ทุกห้อง</option>
+              <option value="mind">Mind</option>
+              <option value="reality">Reality</option>
+              <option value="power">Power</option>
+              <option value="space">Space</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="label">กรองตามวันที่ (YYYY-MM-DD)</span>
+            <input class="input" id="filterDate" placeholder="เช่น 2026-04-25" />
+            <div class="small">หมายเหตุ: Backend ของคุณมี endpoint bookings แบบราย “ห้อง+วัน” จึงใช้วิธีกรองตามวัน/ห้อง แล้วเลือกเฉพาะรายการที่ชื่อผู้จองตรง</div>
+          </div>
+          <div class="field">
+            <span class="label">ชื่อผู้จอง (ต้องตรงกับที่บันทึกในชีต)</span>
+            <input class="input" id="filterBooker" placeholder="เช่น อาจารย์เบนนี้" />
           </div>
           <div>
-            <label>สมาชิกในแผนก</label>
-            <select id="mbName"></select>
-          </div>
-          <div style="grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
-            <button class="btn ghost" id="mbAdd">เพิ่มสมาชิก</button>
-            <button class="btn ghost" id="mbClear">ล้างทั้งหมด</button>
-          </div>
-          <div style="grid-column:1/-1">
-            <label>สมาชิกที่เลือก</label>
-            <div class="chips" id="mbChips"></div>
+            <button class="btn" id="loadListBtn">โหลดรายการ</button>
           </div>
         </div>
+
+        <div id="listBusy" class="busy" style="display:none;margin:10px 0;">
+          <span class="spin"></span> กำลังโหลด…
+        </div>
+
+        <div id="listWrap"></div>
       </div>
-      <div class="modalFooter">
-        <button class="btn ghost" id="mMembersCancel">ยกเลิก</button>
-        <button class="btn" id="mMembersSave">บันทึกสมาชิก</button>
+    </section>
+
+    <!-- STATS TAB -->
+    <section id="tab-stats" style="display:none">
+      <div class="card">
+        <h2 class="sectionTitle">สถิติการใช้งานห้องประชุม</h2>
+
+        <div class="row" style="margin-bottom:12px">
+          <div class="field">
+            <span class="label">ช่วงเวลา</span>
+            <select class="select" id="rangeDays">
+              <option value="7">7 วันล่าสุด</option>
+              <option value="14">14 วันล่าสุด</option>
+              <option value="30">30 วันล่าสุด</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="label">ประเภทสถิติ</span>
+            <select class="select" id="statType">
+              <option value="byHour">การใช้งานตามช่วงเวลา</option>
+              <option value="byRoom">ห้องที่ถูกใช้งานมากที่สุด</option>
+            </select>
+          </div>
+          <div>
+            <button class="btn" id="updateStatsBtn">อัปเดตสถิติ</button>
+          </div>
+        </div>
+
+        <div class="statsRow">
+          <div class="statCard">
+            <p class="statLabel">จำนวนการจองทั้งหมด</p>
+            <p class="statValue" id="statTotal">-</p>
+          </div>
+          <div class="statCard">
+            <p class="statLabel">ห้องที่ถูกใช้งานมากที่สุด</p>
+            <p class="statValue" id="statTopRoom">-</p>
+          </div>
+          <div class="statCard">
+            <p class="statLabel">ช่วงเวลาที่ใช้งานมากที่สุด</p>
+            <p class="statValue" id="statTopHour">-</p>
+          </div>
+        </div>
+
+        <div class="chartWrap">
+          <div style="font-weight:1000;color:#0b6f69;margin:0 0 10px;">กราฟการใช้งาน</div>
+          <canvas id="chart" height="120"></canvas>
+        </div>
+
+        <div id="statsBusy" class="busy" style="display:none;margin:10px 0;">
+          <span class="spin"></span> กำลังคำนวณสถิติ…
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal (booking form) -->
+  <div class="backdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modalHead">
+        <div class="ttl" id="modalTitle">จองห้องประชุม</div>
+        <button class="close" id="closeModal">✕</button>
+      </div>
+      <div class="modalBody">
+        <p class="hint" id="modalHint">กรอกข้อมูลการประชุม แล้วกด “ยืนยันการจอง”</p>
+
+        <div class="row">
+          <div class="field">
+            <span class="label">หัวข้อการประชุม</span>
+            <input class="input" id="meetTitle" placeholder="เช่น ประชุมพัฒนาระบบ" />
+          </div>
+          <div class="field">
+            <span class="label">รายละเอียดการประชุม</span>
+            <input class="input" id="meetDesc" placeholder="เช่น ติดตามงาน Sprint / Requirements" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <span class="label">วัน-เวลา</span>
+            <input class="input" id="meetWhen" disabled />
+          </div>
+          <div class="field">
+            <span class="label">ห้อง</span>
+            <input class="input" id="meetRoom" disabled />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <span class="label">ผู้เข้าร่วม (อีเมลคั่นด้วย , )</span>
+            <input class="input" id="meetAtt" placeholder="เช่น a@x.com, b@y.com" />
+            <div class="small">ระบบจะส่งอีเมลเชิญผ่าน Calendar API ที่ backend ของคุณ</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:14px; justify-content:flex-end; flex-wrap:wrap;">
+          <button class="btn secondary" id="cancelBtn">ยกเลิก</button>
+          <button class="btn" id="confirmBtn">ยืนยันการจอง</button>
+        </div>
+
+        <div id="modalBusy" class="busy" style="display:none;margin-top:12px;">
+          <span class="spin"></span> กำลังสร้างรายการจอง…
+        </div>
+
+        <div class="okBox" id="successBox" style="display:none;">
+          <p class="big">✅ จองห้องประชุมสำเร็จ</p>
+          <div id="successText" style="font-weight:900;color:#0b2b2a;"></div>
+          <div class="small" id="successLink"></div>
+        </div>
       </div>
     </div>
   </div>
 
-<script>
-  // ====== CONFIG ======
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLp9bB6QHjPZ8KRf1FqGJ5am-ubfJqHE2pxgCxX_szEHnOEX8wjlIukDCupjOmC9wSow/exec";
-  const API_KEY = "ESS-ROOM-2026";
-  const TZ_OFFSET = "+07:00";
+  <div class="toast" id="toast">ข้อความแจ้งเตือน</div>
 
-  // ====== STATE ======
-  const state = {
-    employees: [],
-    departments: [],
-    roomTopics: {},
-    roomKey: null,
-    roomName: null,
-    roomDate: null,
-    roomBookings: [],
-    booking: {
-      roomKey: "",
-      date: "",
-      start: "08:30",
-      end: "17:30",
-      dept: "",
-      name: "",
-      email: "",
-      title: "",
-      desc: "",
-      members: new Map()
-    }
-  };
+  <script>
+    /************************************************************
+     * CONFIG (แก้ตรงนี้)
+     ************************************************************/
+    const WEBAPP_URL = "PUT_YOUR_SCRIPT_WEBAPP_URL_HERE"; // เช่น https://script.google.com/macros/s/XXXX/exec
+    const API_KEY = "ESS-ROOM-2026";
 
-  // ====== DOM ======
-  const logEl = document.getElementById("log");
-  const statusDot = document.getElementById("statusDot");
-  const statusText = document.getElementById("statusText");
-  const roomsEl = document.getElementById("rooms");
+    /************************************************************
+     * ROOM MAP (เหมือน backend: Mind/Reality/Power/Space)
+     ************************************************************/
+    const ROOMS = [
+      { key:"mind",    name:"ห้อง Mind",    capacity: 20 },
+      { key:"reality", name:"ห้อง Reality", capacity: 20 },
+      { key:"power",   name:"ห้อง Power",   capacity: 10 },
+      { key:"space",   name:"ห้อง Space",   capacity: 6  },
+    ];
 
-  const mRoom = document.getElementById("mRoom");
-  const mRoomTitle = document.getElementById("mRoomTitle");
-  const mRoomDate = document.getElementById("mRoomDate");
-  const mRoomRows = document.getElementById("mRoomRows");
+    const TZ_OFFSET = "+07:00"; // Asia/Bangkok (สำหรับสร้าง ISO ส่งให้ backend)
 
-  const mBook = document.getElementById("mBook");
-  const mBookTitle = document.getElementById("mBookTitle");
-  const mBookRoomHint = document.getElementById("mBookRoomHint");
-  const bkDate = document.getElementById("bkDate");
-  const bkStart = document.getElementById("bkStart");
-  const bkEnd = document.getElementById("bkEnd");
-  const bkDept = document.getElementById("bkDept");
-  const bkName = document.getElementById("bkName");
-  const bkEmail = document.getElementById("bkEmail");
-  const pillDetails = document.getElementById("pillDetails");
-  const pillMembers = document.getElementById("pillMembers");
-  const membersChips = document.getElementById("membersChips");
-  const bkLog = document.getElementById("bkLog");
-
-  const mDetails = document.getElementById("mDetails");
-  const dtTitle = document.getElementById("dtTitle");
-  const dtDesc = document.getElementById("dtDesc");
-
-  const mMembers = document.getElementById("mMembers");
-  const mbDept = document.getElementById("mbDept");
-  const mbName = document.getElementById("mbName");
-  const mbChips = document.getElementById("mbChips");
-
-  // ====== Helpers ======
-  const pad = (n) => String(n).padStart(2,"0");
-  const nowDateTH = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  };
-  const tomorrow = () => {
-    const d = new Date();
-    d.setDate(d.getDate()+1);
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  };
-  function setStatus(ok, text){
-    statusDot.className = "dot " + (ok ? "ok" : "no");
-    statusText.textContent = text;
-  }
-  function log(msg){ logEl.textContent += msg + "\n"; }
-  function clearLog(){ logEl.textContent = ""; }
-  function clearBkLog(){ bkLog.textContent = ""; }
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-  }
-  function isValidEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||"").trim());
-  }
-  function makeISO(dateYYYYMMDD, hhmm){
-    const [y,m,d] = dateYYYYMMDD.split("-").map(Number);
-    const [hh,mm] = hhmm.split(":").map(Number);
-    return `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00${TZ_OFFSET}`;
-  }
-  function isPast(iso){ return new Date(iso).getTime() <= Date.now(); }
-
-  function buildTimeOptions(start="08:30", end="17:30", stepMin=30){
-    const [sh, sm] = start.split(":").map(Number);
-    const [eh, em] = end.split(":").map(Number);
-    let t = sh*60 + sm;
-    const tEnd = eh*60 + em;
-    const list = [];
-    while (t <= tEnd){
-      const hh = Math.floor(t/60);
-      const mm = t%60;
-      list.push(`${pad(hh)}:${pad(mm)}`);
-      t += stepMin;
-    }
-    return list;
-  }
-  function fillSelect(sel, options, selected, placeholder){
-    sel.innerHTML = "";
-    if (placeholder){
-      const o = document.createElement("option");
-      o.value = "";
-      o.textContent = placeholder;
-      sel.appendChild(o);
-    }
-    options.forEach(v => {
-      const o = document.createElement("option");
-      o.value = v;
-      o.textContent = v;
-      if (v === selected) o.selected = true;
-      sel.appendChild(o);
-    });
-  }
-  function openModal(el){ el.style.display = "flex"; }
-  function closeModal(el){ el.style.display = "none"; }
-
-  // ====== JSONP ======
-  function jsonpCall(params, onDone){
-    const cb = "cb_" + Math.random().toString(36).slice(2);
-    params.callback = cb;
-
-    const timer = setTimeout(() => {
-      onDone && onDone({ ok:false, error:"TIMEOUT" });
-      cleanup();
-    }, 15000);
-
-    function cleanup(){
-      clearTimeout(timer);
-      try { delete window[cb]; } catch(_){}
-    }
-
-    window[cb] = (res) => { cleanup(); onDone && onDone(res); };
-
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k,v]) => {
-      if (v === undefined || v === null) return;
-      qs.set(k, String(v));
-    });
-
-    const url = `${WEBAPP_URL}?${qs.toString()}&_=${Date.now()}`;
-    const s = document.createElement("script");
-    s.src = url;
-    s.onerror = () => {
-      cleanup();
-      onDone && onDone({ ok:false, error:"SCRIPT_ERROR" });
+    /************************************************************
+     * STATE
+     ************************************************************/
+    const state = {
+      serverOk: false,
+      serverTz: "Asia/Bangkok",
+      selected: ymdToday(),
+      calYear: new Date().getFullYear(),
+      calMonth: new Date().getMonth(), // 0-11
+      employees: [],
+      chips: [], // selected attendee emails
+      bookingsByRoom: new Map(), // roomKey -> items[]
     };
-    document.body.appendChild(s);
-  }
 
-  // ====== Backend API wrappers ======
-  function apiEmployees(){
-    return new Promise((resolve) => {
-      jsonpCall({ action:"employees", apiKey:API_KEY }, resolve);
-    });
-  }
-  function apiBookings(roomKey, dateYYYYMMDD){
-    return new Promise((resolve) => {
-      jsonpCall({ action:"bookings", apiKey:API_KEY, roomKey, date: dateYYYYMMDD }, resolve);
-    });
-  }
-  function apiCreateMeeting(payload){
-    return new Promise((resolve) => {
-      jsonpCall({ action:"createmeeting", apiKey:API_KEY, ...payload }, resolve);
-    });
-  }
-
-  // ====== Rooms UI ======
-  const ROOMS = [
-    { key:"mind",    titleA:"The Mind",    titleB:"Stone", stone:"Mind.png",    accentRgb:"245, 158, 11" },
-    { key:"reality", titleA:"The Reality", titleB:"Stone", stone:"Reality.png", accentRgb:"239, 68, 68" },
-    { key:"power",   titleA:"The Power",   titleB:"Stone", stone:"Power.png",   accentRgb:"168, 85, 247" },
-    { key:"space",   titleA:"The Space",   titleB:"Stone", stone:"Space.png",   accentRgb:"59, 130, 246" }
-  ];
-
-  async function loadRoomTopics(dateYYYYMMDD = nowDateTH()){
-    const topicsMap = {};
-    await Promise.all(ROOMS.map(async (r) => {
-      try{
-        const res = await apiBookings(r.key, dateYYYYMMDD);
-        if (!res || !res.ok || !Array.isArray(res.items)){
-          topicsMap[r.key] = [];
+    /************************************************************
+     * JSONP Helper
+     ************************************************************/
+    function jsonp(params){
+      return new Promise((resolve, reject) => {
+        if (!WEBAPP_URL || WEBAPP_URL.includes("PUT_YOUR")) {
+          reject(new Error("กรุณาตั้งค่า WEBAPP_URL ก่อนใช้งาน"));
           return;
         }
-        const seen = new Set();
-        const titles = [];
-        res.items.forEach(it => {
-          const t = String(it.title || "").trim();
-          if (!t) return;
-          const k = t.toLowerCase();
-          if (seen.has(k)) return;
-          seen.add(k);
-          titles.push(t);
-        });
-        topicsMap[r.key] = titles.slice(0, 4);
-      }catch(_){
-        topicsMap[r.key] = [];
+        const cb = "cb_" + Math.random().toString(36).slice(2);
+        const url = new URL(WEBAPP_URL);
+        url.searchParams.set("callback", cb);
+        url.searchParams.set("apiKey", API_KEY);
+        Object.entries(params || {}).forEach(([k,v]) => url.searchParams.set(k, v));
+
+        const script = document.createElement("script");
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("Timeout ติดต่อ backend ไม่สำเร็จ"));
+        }, 15000);
+
+        window[cb] = (data) => {
+          cleanup();
+          resolve(data);
+        };
+
+        function cleanup(){
+          clearTimeout(timer);
+          delete window[cb];
+          script.remove();
+        }
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("โหลด JSONP script ไม่สำเร็จ"));
+        };
+
+        script.src = url.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    /************************************************************
+     * Utils
+     ************************************************************/
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymdFromDate(d){
+      return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
+    }
+    function ymdToday(){ return ymdFromDate(new Date()); }
+
+    function thaiDateLong(ymd){
+      const [y,m,d] = ymd.split("-").map(Number);
+      const dt = new Date(y, m-1, d);
+      const opt = { weekday:"long", year:"numeric", month:"long", day:"numeric" };
+      // แสดงเป็น พ.ศ. ตามภาพตัวอย่าง
+      return dt.toLocaleDateString("th-TH-u-ca-buddhist", opt);
+    }
+
+    function hmToMin(hm){
+      const m = String(hm).match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return 999999;
+      return Number(m[1])*60 + Number(m[2]);
+    }
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function buildIso(ymd, hm){
+      // ส่งเป็น 2026-04-25T10:00:00+07:00
+      return `${ymd}T${hm}:00${TZ_OFFSET}`;
+    }
+
+    function addMinutes(hm, mins){
+      const t = hmToMin(hm) + mins;
+      const h = Math.floor(t/60);
+      const m = t%60;
+      return pad2(h)+":"+pad2(m);
+    }
+
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2600);
+    }
+
+    /************************************************************
+     * Times (08:00 - 17:30 step 30m; แต่ slot แสดงเป็นชั่วโมง)
+     ************************************************************/
+    const TIME_START = "08:00";
+    const TIME_END   = "17:30";
+    const STEP_MIN   = 30;
+    function buildTimeOptions(){
+      const startSel = document.getElementById("startTime");
+      const endSel = document.getElementById("endTime");
+      startSel.innerHTML = "";
+      endSel.innerHTML = "";
+
+      let t = TIME_START;
+      const times = [];
+      while (hmToMin(t) <= hmToMin(TIME_END)){
+        times.push(t);
+        t = addMinutes(t, STEP_MIN);
       }
-    }));
-    state.roomTopics = topicsMap;
-  }
+      for (const x of times){
+        const o = document.createElement("option");
+        o.value = x; o.textContent = x;
+        startSel.appendChild(o);
+      }
+      // default
+      startSel.value = "10:00";
 
-  function renderRooms(){
-    roomsEl.innerHTML = "";
-    ROOMS.forEach(r => {
-      const div = document.createElement("div");
-      div.className = "roomCard";
-      div.style.setProperty("--accent-rgb", r.accentRgb);
-
-      const topics = (state.roomTopics && Array.isArray(state.roomTopics[r.key])) ? state.roomTopics[r.key] : [];
-      const list = topics.length ? topics : ["ยังไม่มีการจองวันนี้"];
-      const bullets = list.map(t => `<li><b>หัวข้อ :</b> ${escapeHtml(t)}</li>`).join("");
-
-      div.innerHTML = `
-        <div class="tileInner">
-          <div class="tileTop">
-            <div class="titlePill">
-              <div class="stack">
-                <span>${escapeHtml(r.titleA)}</span>
-                <span>${escapeHtml(r.titleB)}</span>
-              </div>
-            </div>
-            <img class="stoneIcon" src="${escapeHtml(r.stone)}" alt="${escapeHtml(r.key)}"
-                 onerror="this.style.opacity='.35'">
-          </div>
-
-          <div class="bulletBox">
-            <ul>${bullets}</ul>
-          </div>
-        </div>
-      `;
-
-      div.addEventListener("click", () => openRoomStatus(r.key, `${r.titleA} ${r.titleB}`));
-      roomsEl.appendChild(div);
-    });
-  }
-
-  // ====== Room Status modal ======
-  async function openRoomStatus(roomKey, roomName){
-    state.roomKey = roomKey;
-    state.roomName = roomName;
-    mRoomTitle.textContent = `${roomName} — สถานะการจอง`;
-    mRoomDate.value = nowDateTH();
-    state.roomDate = mRoomDate.value;
-
-    openModal(mRoom);
-    await refreshRoomBookings();
-  }
-
-  async function refreshRoomBookings(){
-    const roomKey = state.roomKey;
-    const date = mRoomDate.value || nowDateTH();
-    state.roomDate = date;
-
-    mRoomRows.innerHTML = `<div class="listRow"><div class="pill">กำลังโหลด…</div><div></div><div></div><div></div></div>`;
-    const res = await apiBookings(roomKey, date);
-
-    if (!res || !res.ok){
-      mRoomRows.innerHTML = `<div class="listRow"><div class="pill">โหลดไม่สำเร็จ</div><div>${escapeHtml(res?.error || "unknown")}</div><div></div><div></div></div>`;
-      return;
+      // end options will be refreshed by validateTimeRange()
+      validateTimeRange();
     }
 
-    const rows = Array.isArray(res.items) ? res.items : [];
-    state.roomBookings = rows;
+    function validateTimeRange(){
+      const startSel = document.getElementById("startTime");
+      const endSel = document.getElementById("endTime");
+      const s = startSel.value;
 
-    if (rows.length === 0){
-      mRoomRows.innerHTML = `<div class="listRow"><div class="pill">ไม่มีรายการจอง</div><div></div><div></div><div></div></div>`;
-      return;
+      endSel.innerHTML = "";
+      // max 4 hours
+      const sMin = hmToMin(s);
+      const maxEnd = sMin + 240;
+      let t = addMinutes(s, STEP_MIN);
+      while (hmToMin(t) <= hmToMin(TIME_END) && hmToMin(t) <= maxEnd){
+        const o = document.createElement("option");
+        o.value = t; o.textContent = t;
+        endSel.appendChild(o);
+        t = addMinutes(t, STEP_MIN);
+      }
+
+      // default end = start + 60 (ถ้าได้)
+      const want = addMinutes(s, 60);
+      const exists = [...endSel.options].some(o => o.value === want);
+      endSel.value = exists ? want : (endSel.options[0]?.value || want);
     }
 
-    mRoomRows.innerHTML = "";
-    rows.forEach(it => {
-      const div = document.createElement("div");
-      div.className = "listRow";
-      div.innerHTML = `
-        <div><span class="pill">${escapeHtml(it.start)}–${escapeHtml(it.end)}</span></div>
-        <div>${escapeHtml(it.title || "-")}</div>
-        <div>${escapeHtml(it.department || "-")}</div>
-        <div>${escapeHtml(it.booker || "-")}</div>
-      `;
-      mRoomRows.appendChild(div);
-    });
-  }
+    /************************************************************
+     * Calendar UI
+     ************************************************************/
+    function renderCalendar(){
+      const cal = document.getElementById("calendar");
+      cal.innerHTML = "";
 
-  // ====== Booking modal ======
-  function resetBookingState(){
-    state.booking = {
-      roomKey: state.roomKey || "",
-      date: tomorrow(),
-      start: "08:30",
-      end: "17:30",
-      dept: "",
-      name: "",
-      email: "",
-      title: "",
-      desc: "",
-      members: new Map()
-    };
-  }
+      const head = document.createElement("div");
+      head.className = "calHead";
 
-  function renderMembersChips(){
-    membersChips.innerHTML = "";
-    const arr = Array.from(state.booking.members.values());
-    pillMembers.textContent = `สมาชิก: ${arr.length} คน`;
+      const title = document.createElement("div");
+      title.className = "calTitle";
+      const monthName = new Date(state.calYear, state.calMonth, 1)
+        .toLocaleDateString("th-TH-u-ca-buddhist", { month:"long", year:"numeric" });
+      title.textContent = monthName;
 
-    if (arr.length === 0){
-      membersChips.innerHTML = `<span class="pill">ยังไม่มีสมาชิก</span>`;
-      return;
-    }
-    arr.forEach(m => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      chip.innerHTML = `
-        <span><b>${escapeHtml(m.name || m.email)}</b> — ${escapeHtml(m.department || "-")}</span>
-        <span style="opacity:.8">${escapeHtml(m.email)}</span>
-        <span class="x" title="ลบ">×</span>
-      `;
-      chip.querySelector(".x").addEventListener("click", () => {
-        state.booking.members.delete(m.email);
-        renderMembersChips();
+      const nav = document.createElement("div");
+      nav.className = "calNav";
+
+      const prev = document.createElement("button");
+      prev.className = "iconBtn";
+      prev.textContent = "‹";
+      prev.onclick = () => {
+        state.calMonth--;
+        if (state.calMonth < 0){ state.calMonth=11; state.calYear--; }
+        renderCalendar();
+      };
+
+      const next = document.createElement("button");
+      next.className = "iconBtn";
+      next.textContent = "›";
+      next.onclick = () => {
+        state.calMonth++;
+        if (state.calMonth > 11){ state.calMonth=0; state.calYear++; }
+        renderCalendar();
+      };
+
+      nav.append(prev, next);
+      head.append(title, nav);
+
+      const dow = document.createElement("div");
+      dow.className = "dow";
+      ["อา","จ","อ","พ","พฤ","ศ","ส"].forEach(x=>{
+        const d = document.createElement("div");
+        d.textContent = x;
+        dow.appendChild(d);
       });
-      membersChips.appendChild(chip);
-    });
-  }
 
-  function openBookingModal(){
-    resetBookingState();
+      const days = document.createElement("div");
+      days.className = "days";
 
-    const times = buildTimeOptions("08:30","17:30",30);
-    fillSelect(bkStart, times, state.booking.start);
-    fillSelect(bkEnd, times, state.booking.end);
-    bkDate.value = state.booking.date;
+      const first = new Date(state.calYear, state.calMonth, 1);
+      const startDow = first.getDay(); // 0=Sun
+      const daysInMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
 
-    fillSelect(bkDept, state.departments, "", "— เลือกแผนก —");
-    bkName.innerHTML = "";
-    bkName.disabled = true;
-    bkEmail.value = "";
+      // previous month trailing
+      const prevMonthDays = new Date(state.calYear, state.calMonth, 0).getDate();
+      for (let i=0;i<startDow;i++){
+        const dayNum = prevMonthDays - startDow + i + 1;
+        const b = document.createElement("button");
+        b.className = "day muted";
+        b.textContent = dayNum;
+        b.disabled = true;
+        days.appendChild(b);
+      }
 
-    pillDetails.textContent = "หัวข้อ: ยังไม่ระบุ";
-    dtTitle.value = "";
-    dtDesc.value = "";
+      // current month
+      for (let d=1; d<=daysInMonth; d++){
+        const dt = new Date(state.calYear, state.calMonth, d);
+        const ymd = ymdFromDate(dt);
 
-    state.booking.members.clear();
-    renderMembersChips();
+        const b = document.createElement("button");
+        b.className = "day";
+        b.textContent = d;
 
-    mBookTitle.textContent = "จองห้องประชุม";
-    mBookRoomHint.textContent = `ห้อง: ${state.roomName} (${state.roomKey})`;
+        const today = ymdToday();
+        if (ymd === today) b.classList.add("today");
+        if (ymd === state.selected) b.classList.add("sel");
 
-    clearBkLog();
-    openModal(mBook);
-  }
+        b.onclick = () => {
+          state.selected = ymd;
+          renderCalendar();
+          updateDayTitle();
+          loadBookingsForSelected();
+        };
 
-  function onDeptChange(){
-    const dept = bkDept.value;
-    state.booking.dept = dept;
+        days.appendChild(b);
+      }
 
-    if (!dept){
-      bkName.disabled = true;
-      bkName.innerHTML = "";
-      bkEmail.value = "";
-      return;
+      // next month leading to fill 6 rows nicely (optional)
+      const totalCells = startDow + daysInMonth;
+      const add = (totalCells % 7 === 0) ? 0 : (7 - (totalCells % 7));
+      for (let i=1; i<=add; i++){
+        const b = document.createElement("button");
+        b.className = "day muted";
+        b.textContent = i;
+        b.disabled = true;
+        days.appendChild(b);
+      }
+
+      cal.append(head, dow, days);
     }
 
-    const list = state.employees
-      .filter(e => (e.department || "") === dept)
-      .map(e => ({ label: e.name || e.email, value: e.email, name: e.name || "", email: e.email }));
-
-    bkName.disabled = false;
-    bkName.innerHTML = "";
-    const ph = document.createElement("option");
-    ph.value = "";
-    ph.textContent = "— เลือกชื่อผู้จอง —";
-    bkName.appendChild(ph);
-
-    list.forEach(it => {
-      const o = document.createElement("option");
-      o.value = it.email;
-      o.textContent = it.label;
-      o.dataset.name = it.name;
-      o.dataset.email = it.email;
-      bkName.appendChild(o);
-    });
-
-    bkEmail.value = "";
-    state.booking.name = "";
-    state.booking.email = "";
-  }
-
-  function onNameChange(){
-    const email = bkName.value;
-    if (!email){
-      bkEmail.value = "";
-      state.booking.name = "";
-      state.booking.email = "";
-      return;
+    function updateDayTitle(){
+      const el = document.getElementById("dayTitle");
+      el.textContent = `รายการจองห้องประชุมวันที่ ${thaiDateLong(state.selected)}`;
     }
-    const opt = bkName.options[bkName.selectedIndex];
-    const name = opt?.dataset?.name || "";
-    bkEmail.value = email;
-    state.booking.name = name;
-    state.booking.email = email;
 
-    if (!state.booking.members.has(email)){
-      state.booking.members.set(email, { email, name, department: state.booking.dept });
-      renderMembersChips();
+    /************************************************************
+     * Data loading
+     ************************************************************/
+    async function ping(){
+      try{
+        const res = await jsonp({ action:"ping" });
+        if (!res?.ok) throw new Error(res?.error || "ping failed");
+        state.serverOk = true;
+        state.serverTz = res.tz || "Asia/Bangkok";
+        document.getElementById("serverPill").textContent = `เชื่อมต่อแล้ว (${state.serverTz})`;
+      }catch(err){
+        state.serverOk = false;
+        document.getElementById("serverPill").textContent = "เชื่อมต่อไม่สำเร็จ";
+        toast(String(err.message || err));
+      }
     }
-  }
 
-  function openDetailsModal(){
-    openModal(mDetails);
-    dtTitle.value = state.booking.title || dtTitle.value || "";
-    dtDesc.value = state.booking.desc || dtDesc.value || "";
-  }
-  function saveDetails(){
-    const title = (dtTitle.value || "").trim();
-    if (!title){
-      alert("หัวข้อการประชุม (บังคับ) ต้องกรอก");
-      return;
+    async function loadEmployees(){
+      try{
+        const res = await jsonp({ action:"employees" });
+        if (!res?.ok) throw new Error(res?.error || "employees failed");
+        state.employees = res.employees || [];
+      }catch(err){
+        // ไม่บล็อกการจอง แต่แจ้งเตือน
+        toast("โหลดรายชื่อพนักงานไม่สำเร็จ (ยังจองได้)");
+      }
     }
-    state.booking.title = title;
-    state.booking.desc = (dtDesc.value || "").trim();
-    pillDetails.textContent = `หัวข้อ: ${title}`;
-    closeModal(mDetails);
-  }
 
-  function openMembersModal(){
-    fillSelect(mbDept, state.departments, "", "— เลือกแผนก —");
-    mbName.innerHTML = "";
-    renderMbChips();
-    openModal(mMembers);
-  }
-
-  function renderMbChips(){
-    mbChips.innerHTML = "";
-    const arr = Array.from(state.booking.members.values());
-    if (arr.length === 0){
-      mbChips.innerHTML = `<span class="pill">ยังไม่มีสมาชิก</span>`;
-      return;
+    async function loadBookings(roomKey, ymd){
+      const res = await jsonp({ action:"bookings", roomKey, date: ymd });
+      if (!res?.ok) throw new Error(res?.error || "bookings failed");
+      return res.items || [];
     }
-    arr.forEach(m => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      chip.innerHTML = `
-        <span><b>${escapeHtml(m.name || m.email)}</b> — ${escapeHtml(m.department || "-")}</span>
-        <span style="opacity:.8">${escapeHtml(m.email)}</span>
-        <span class="x" title="ลบ">×</span>
-      `;
-      chip.querySelector(".x").addEventListener("click", () => {
-        state.booking.members.delete(m.email);
-        renderMbChips();
+
+    async function loadBookingsForSelected(){
+      document.getElementById("roomsGrid").innerHTML =
+        `<div class="busy"><span class="spin"></span> กำลังโหลดสถานะห้อง…</div>`;
+
+      const ymd = state.selected;
+
+      const tasks = ROOMS.map(async r=>{
+        try{
+          const items = await loadBookings(r.key, ymd);
+          state.bookingsByRoom.set(r.key, items);
+        }catch(err){
+          state.bookingsByRoom.set(r.key, []);
+        }
       });
-      mbChips.appendChild(chip);
-    });
-  }
 
-  function onMbDeptChange(){
-    const dept = mbDept.value;
-    mbName.innerHTML = "";
-    if (!dept){
-      const o = document.createElement("option");
-      o.value = "";
-      o.textContent = "เลือกแผนกก่อน";
-      mbName.appendChild(o);
-      return;
-    }
-
-    const list = state.employees.filter(e => (e.department||"") === dept);
-    const ph = document.createElement("option");
-    ph.value = "";
-    ph.textContent = "— เลือกสมาชิก —";
-    mbName.appendChild(ph);
-
-    list.forEach(e => {
-      const o = document.createElement("option");
-      o.value = e.email;
-      o.textContent = e.name || e.email;
-      o.dataset.name = e.name || "";
-      o.dataset.dept = e.department || "";
-      mbName.appendChild(o);
-    });
-  }
-
-  function mbAddMember(){
-    const email = mbName.value;
-    if (!email) return;
-    const opt = mbName.options[mbName.selectedIndex];
-    const name = opt?.dataset?.name || "";
-    const dept = opt?.dataset?.dept || mbDept.value || "";
-    if (!state.booking.members.has(email)){
-      state.booking.members.set(email, { email, name, department: dept });
-    }
-    renderMbChips();
-  }
-
-  function mbClearAll(){
-    state.booking.members.clear();
-    renderMbChips();
-  }
-
-  function mbSaveAndClose(){
-    renderMembersChips();
-    closeModal(mMembers);
-  }
-
-  async function saveBooking(){
-    clearBkLog();
-
-    const date = bkDate.value || "";
-    const start = bkStart.value;
-    const end = bkEnd.value;
-
-    const dept = bkDept.value || "";
-    const bookerEmail = bkEmail.value || "";
-    const title = (state.booking.title || "").trim();
-    const desc = (state.booking.desc || "").trim();
-
-    if (!date){ alert("ต้องเลือกวันที่"); return; }
-    if (!start || !end){ alert("ต้องเลือกเวลา"); return; }
-    if (!dept){ alert("ต้องเลือกแผนก"); return; }
-    if (!bookerEmail || !isValidEmail(bookerEmail)){ alert("ต้องเลือกชื่อผู้จอง"); return; }
-    if (!title){ alert("ต้องใส่หัวข้อการประชุม"); return; }
-
-    const startISO = makeISO(date, start);
-    const endISO = makeISO(date, end);
-
-    if (new Date(endISO).getTime() <= new Date(startISO).getTime()){
-      alert("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม");
-      return;
-    }
-    if (isPast(startISO)){
-      alert("ห้ามจองเวลาที่ผ่านมาแล้ว");
-      return;
-    }
-
-    const members = Array.from(state.booking.members.keys());
-    if (!members.includes(bookerEmail)) members.unshift(bookerEmail);
-    const attendees = members.join(", ");
-
-    const payload = {
-      roomKey: state.roomKey,
-      title,
-      start: startISO,
-      end: endISO,
-      attendees,
-      description: desc,
-      bookerEmail
-    };
-
-    bkLog.textContent += "REQUEST:\n" + JSON.stringify(payload, null, 2) + "\n";
-
-    const res = await apiCreateMeeting(payload);
-
-    bkLog.textContent += "RESPONSE:\n" + JSON.stringify(res, null, 2) + "\n";
-
-    if (res && res.ok){
-      alert("บันทึกการจองเรียบร้อย");
-      closeModal(mBook);
-
-      await loadRoomTopics(nowDateTH());
+      await Promise.all(tasks);
       renderRooms();
-
-      await refreshRoomBookings();
-    } else {
-      const msg = res?.message ? `${res.error}: ${res.message}` : (res?.error || "unknown");
-      alert("บันทึกล้มเหลว: " + msg);
-    }
-  }
-
-  async function init(){
-    clearLog();
-    renderRooms();
-
-    loadRoomTopics(nowDateTH()).then(() => renderRooms());
-
-    setStatus(false, "Loading employees…");
-    const res = await apiEmployees();
-
-    if (!res || !res.ok || !Array.isArray(res.employees)){
-      setStatus(false, "Employees load failed");
-      return;
     }
 
-    state.employees = res.employees.map(e => ({
-      email: (e.email||"").toLowerCase(),
-      name: e.name || "",
-      department: e.department || "",
-      nickname: e.nickname || "",
-      position: e.position || ""
-    }));
+    /************************************************************
+     * Build hourly slots like screenshot (08:00-17:00, 1h)
+     ************************************************************/
+    function buildHourlySlots(){
+      const out = [];
+      let t = "08:00";
+      while (hmToMin(t) < hmToMin("17:00")){
+        out.push({ start:t, end:addMinutes(t, 60) });
+        t = addMinutes(t, 60);
+      }
+      return out;
+    }
 
-    const deps = new Set();
-    state.employees.forEach(e => { if (e.department) deps.add(e.department); });
-    state.departments = Array.from(deps).sort((a,b)=>a.localeCompare(b));
+    function isPastSlot(ymd, startHm){
+      const now = new Date();
+      const today = ymdToday();
+      if (ymd !== today) return false;
+      // วันนี้: slot ที่ start <= now ถือว่า past (ให้สอดคล้อง backend ที่ไม่ให้จองเวลาย้อน)
+      const nowMin = now.getHours()*60 + now.getMinutes();
+      return hmToMin(startHm) <= nowMin;
+    }
 
-    setStatus(true, `Ready (${state.employees.length} employees)`);
-  }
+    function slotBooked(roomItems, slot){
+      // ถ้ารายการทับช่วงเวลา: (start < slot.end && end > slot.start)
+      const a0 = hmToMin(slot.start), a1 = hmToMin(slot.end);
+      for (const it of roomItems){
+        const b0 = hmToMin(it.start), b1 = hmToMin(it.end);
+        if (b0 < a1 && b1 > a0) return it;
+      }
+      return null;
+    }
 
-  // wiring
-  document.getElementById("mRoomClose").onclick = () => closeModal(mRoom);
-  document.getElementById("mRoomClose2").onclick = () => closeModal(mRoom);
-  document.getElementById("mRoomRefresh").onclick = () => refreshRoomBookings();
-  mRoomDate.addEventListener("change", () => refreshRoomBookings());
-  document.getElementById("mRoomBookBtn").onclick = () => { closeModal(mRoom); openBookingModal(); };
+    function renderRooms(){
+      const grid = document.getElementById("roomsGrid");
+      grid.innerHTML = "";
 
-  document.getElementById("mBookClose").onclick = () => closeModal(mBook);
-  document.getElementById("mBookCancel").onclick = () => closeModal(mBook);
-  bkDept.addEventListener("change", onDeptChange);
-  bkName.addEventListener("change", onNameChange);
-  document.getElementById("btnDetails").onclick = () => openDetailsModal();
-  document.getElementById("btnMembers").onclick = () => openMembersModal();
-  document.getElementById("mBookSave").onclick = () => saveBooking();
+      const slots = buildHourlySlots();
 
-  document.getElementById("mDetailsClose").onclick = () => closeModal(mDetails);
-  document.getElementById("mDetailsCancel").onclick = () => closeModal(mDetails);
-  document.getElementById("mDetailsSave").onclick = () => saveDetails();
+      for (const room of ROOMS){
+        const items = state.bookingsByRoom.get(room.key) || [];
 
-  document.getElementById("mMembersClose").onclick = () => closeModal(mMembers);
-  document.getElementById("mMembersCancel").onclick = () => closeModal(mMembers);
-  mbDept.addEventListener("change", onMbDeptChange);
-  document.getElementById("mbAdd").onclick = () => mbAddMember();
-  document.getElementById("mbClear").onclick = () => mbClearAll();
-  document.getElementById("mMembersSave").onclick = () => mbSaveAndClose();
+        const card = document.createElement("div");
+        card.className = "roomCard";
 
-  [mRoom, mBook, mDetails, mMembers].forEach(ov => {
-    ov.addEventListener("click", (e) => { if (e.target === ov) closeModal(ov); });
-  });
+        const h = document.createElement("h4");
+        h.className = "roomName";
+        h.textContent = room.name;
 
-  init();
-</script>
+        const meta = document.createElement("div");
+        meta.className = "roomMeta";
+        meta.textContent = `จำนวนที่นั่ง: ${room.capacity} คน`;
+
+        const list = document.createElement("div");
+        list.className = "slots";
+
+        for (const s of slots){
+          const booked = slotBooked(items, s);
+          const past = isPastSlot(state.selected, s.start);
+
+          const row = document.createElement("div");
+          row.className = "slot";
+          const time = document.createElement("div");
+          time.innerHTML = `<div class="slotTime">${s.start} - ${s.end}</div>` +
+                           (booked ? `<div class="slotSub">โดย: ${escapeHtml(booked.booker || "-")}</div>` : "");
+
+          const tag = document.createElement("div");
+          tag.className = "tag";
+
+          if (booked){
+            row.classList.add("bad");
+            tag.innerHTML = `<span class="dot bad"></span> จองแล้ว`;
+          } else if (past){
+            row.classList.add("bad");
+            tag.innerHTML = `<span class="dot bad"></span> เวลาผ่านแล้ว`;
+          } else {
+            row.classList.add("ok");
+            tag.innerHTML = `<span class="dot"></span> ว่าง`;
+            row.onclick = () => openBookingModal(room, s);
+          }
+
+          row.append(time, tag);
+          list.appendChild(row);
+        }
+
+        card.append(h, meta, list);
+        grid.appendChild(card);
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /************************************************************
+     * Attendees chips (from employees)
+     ************************************************************/
+    function renderChips(){
+      const box = document.getElementById("chips");
+      box.innerHTML = "";
+      for (const email of state.chips){
+        const c = document.createElement("span");
+        c.className = "chip";
+        c.innerHTML = `${escapeHtml(email)} <button title="ลบ">✕</button>`;
+        c.querySelector("button").onclick = () => {
+          state.chips = state.chips.filter(x => x !== email);
+          renderChips();
+        };
+        box.appendChild(c);
+      }
+    }
+
+    function addChip(email){
+      email = String(email||"").trim().toLowerCase();
+      if (!email) return;
+      if (!email.includes("@")) { toast("กรุณาใส่อีเมลที่ถูกต้อง"); return; }
+      if (!state.chips.includes(email)){
+        state.chips.push(email);
+        renderChips();
+      }
+    }
+
+    /************************************************************
+     * Modal booking
+     ************************************************************/
+    const modal = {
+      roomKey:null,
+      roomName:null,
+      start:null,
+      end:null,
+      ymd:null
+    };
+
+    function openBookingModal(room, slot){
+      // ใช้เวลาตาม dropdown ถ้าผู้ใช้กำหนดช่วงเวลาเอง
+      const startSel = document.getElementById("startTime").value;
+      const endSel = document.getElementById("endTime").value;
+
+      // ถ้า dropdown ช่วงเวลาทับ slot ที่คลิก ให้ยึด dropdown (เหมือน flow ภาพ 2)
+      // แต่ถ้าผู้ใช้ยังไม่แตะ dropdown ให้ “เด้ง” ตาม slot ที่คลิก
+      const useStart = startSel || slot.start;
+      const useEnd   = endSel || slot.end;
+
+      // validate (ไม่เกิน 4 ชม.)
+      const dur = hmToMin(useEnd) - hmToMin(useStart);
+      if (dur <= 0){ toast("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม"); return; }
+      if (dur > 240){ toast("จองได้ไม่เกิน 4 ชั่วโมง"); return; }
+      if (isPastSlot(state.selected, useStart)){ toast("เวลานี้ผ่านแล้ว (วันนี้)"); return; }
+
+      modal.roomKey = room.key;
+      modal.roomName = room.name;
+      modal.start = useStart;
+      modal.end = useEnd;
+      modal.ymd = state.selected;
+
+      document.getElementById("modalTitle").textContent = "จองห้องประชุม";
+      document.getElementById("meetRoom").value = `${room.name}`;
+      document.getElementById("meetWhen").value = `${thaiDateLong(modal.ymd)} เวลา ${modal.start} - ${modal.end} น.`;
+      document.getElementById("meetTitle").value = "";
+      document.getElementById("meetDesc").value = "";
+
+      // attendees from chips (auto fill)
+      document.getElementById("meetAtt").value = state.chips.join(", ");
+
+      document.getElementById("successBox").style.display = "none";
+      document.getElementById("modalBusy").style.display = "none";
+      document.getElementById("confirmBtn").disabled = false;
+
+      showModal(true);
+    }
+
+    function showModal(show){
+      const bd = document.getElementById("backdrop");
+      bd.classList.toggle("show", !!show);
+      bd.setAttribute("aria-hidden", show ? "false" : "true");
+    }
+
+    async function confirmBooking(){
+      const bookerEmail = document.getElementById("bookerEmail").value.trim().toLowerCase();
+      if (!bookerEmail || !bookerEmail.includes("@")){
+        toast("กรุณากรอกอีเมลผู้จองให้ถูกต้อง");
+        return;
+      }
+
+      const title = document.getElementById("meetTitle").value.trim() || "Meeting";
+      const description = document.getElementById("meetDesc").value.trim();
+      const att = document.getElementById("meetAtt").value.trim();
+
+      const startIso = buildIso(modal.ymd, modal.start);
+      const endIso   = buildIso(modal.ymd, modal.end);
+
+      document.getElementById("modalBusy").style.display = "flex";
+      document.getElementById("confirmBtn").disabled = true;
+
+      try{
+        const res = await jsonp({
+          action:"createmeeting",
+          roomKey: modal.roomKey,
+          title,
+          description,
+          attendees: att,
+          bookerEmail,
+          start: startIso,
+          end: endIso
+        });
+
+        if (!res?.ok){
+          throw new Error(res?.error || res?.message || "จองไม่สำเร็จ");
+        }
+
+        const ok = document.getElementById("successBox");
+        ok.style.display = "block";
+        document.getElementById("successText").innerHTML =
+          `<b>${escapeHtml(modal.roomName)}</b><br>`+
+          `${escapeHtml(thaiDateLong(modal.ymd))} เวลา ${escapeHtml(modal.start)} - ${escapeHtml(modal.end)} น.<br>`+
+          `ผู้จอง: ${escapeHtml(res.employeeLookup?.name || bookerEmail)}`;
+
+        const link = res.calendar?.htmlLink ? res.calendar.htmlLink : "";
+        document.getElementById("successLink").innerHTML =
+          link ? `เปิดเหตุการณ์ในปฏิทิน: <a href="${escapeHtml(link)}" target="_blank" rel="noopener">คลิกที่นี่</a>` :
+                 `สร้างเหตุการณ์ปฏิทินแล้ว`;
+
+        toast("จองสำเร็จ ✅");
+        await loadBookingsForSelected(); // refresh
+
+      }catch(err){
+        toast(String(err.message || err));
+      }finally{
+        document.getElementById("modalBusy").style.display = "none";
+        document.getElementById("confirmBtn").disabled = false;
+      }
+    }
+
+    /************************************************************
+     * List tab (ไม่สามารถ “ยกเลิก” ได้ เพราะ backend ไม่มี endpoint cancel)
+     * จึงโชว์ปุ่มยกเลิกแบบ disabled ตามภาพ
+     ************************************************************/
+    async function loadList(){
+      const wrap = document.getElementById("listWrap");
+      const busy = document.getElementById("listBusy");
+      wrap.innerHTML = "";
+      busy.style.display = "flex";
+
+      const roomKey = document.getElementById("filterRoom").value.trim();
+      const ymd = document.getElementById("filterDate").value.trim();
+      const booker = document.getElementById("filterBooker").value.trim();
+
+      if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)){
+        busy.style.display = "none";
+        toast("กรุณากรอกวันที่เป็น YYYY-MM-DD");
+        return;
+      }
+      if (!booker){
+        busy.style.display = "none";
+        toast("กรุณากรอกชื่อผู้จอง (ให้ตรงกับข้อมูลในชีต)");
+        return;
+      }
+
+      try{
+        const keys = roomKey ? [roomKey] : ROOMS.map(r=>r.key);
+        const all = [];
+
+        for (const k of keys){
+          const items = await loadBookings(k, ymd);
+          const roomName = ROOMS.find(r=>r.key===k)?.name || k;
+          for (const it of items){
+            if (String(it.booker||"").includes(booker)){
+              all.push({
+                room: roomName,
+                date: ymd,
+                time: `${it.start} - ${it.end}`,
+                booker: it.booker || "",
+                title: it.title || "",
+              });
+            }
+          }
+        }
+
+        if (all.length === 0){
+          wrap.innerHTML = `<div class="small">ไม่พบรายการ (ลองเปลี่ยนวัน/ห้อง/ชื่อผู้จอง)</div>`;
+          return;
+        }
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>ห้อง</th>
+              <th>วันที่</th>
+              <th>เวลา</th>
+              <th>ชื่อผู้จอง</th>
+              <th>วัตถุประสงค์</th>
+              <th>การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        const tb = table.querySelector("tbody");
+        for (const r of all){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(r.room)}</td>
+            <td>${escapeHtml(thaiDateLong(r.date))}</td>
+            <td>${escapeHtml(r.time)}</td>
+            <td>${escapeHtml(r.booker)}</td>
+            <td>${escapeHtml(r.title)}</td>
+            <td><button class="dangerBtn" title="Backend ยังไม่มี endpoint ยกเลิกการจอง">ยกเลิกการจอง</button></td>
+          `;
+          tb.appendChild(tr);
+        }
+        wrap.appendChild(table);
+
+      }catch(err){
+        toast(String(err.message || err));
+      }finally{
+        busy.style.display = "none";
+      }
+    }
+
+    /************************************************************
+     * Stats tab (คำนวณจากการดึง bookings รายวัน/รายห้อง)
+     ************************************************************/
+    async function updateStats(){
+      const busy = document.getElementById("statsBusy");
+      busy.style.display = "flex";
+
+      const days = Number(document.getElementById("rangeDays").value || "7");
+      const type = document.getElementById("statType").value;
+
+      try{
+        const now = new Date();
+        const dates = [];
+        for (let i=0;i<days;i++){
+          const d = new Date(now);
+          d.setDate(now.getDate() - i);
+          dates.push(ymdFromDate(d));
+        }
+
+        let total = 0;
+        const roomCount = new Map(); // roomKey -> bookings
+        const hourCount = new Map(); // "08:00" -> count
+
+        for (const rk of ROOMS.map(r=>r.key)){
+          roomCount.set(rk, 0);
+          for (const ymd of dates){
+            let items = [];
+            try{
+              items = await loadBookings(rk, ymd);
+            }catch(_){
+              items = [];
+            }
+            total += items.length;
+            roomCount.set(rk, (roomCount.get(rk) || 0) + items.length);
+
+            // count by start hour
+            for (const it of items){
+              const h = (it.start || "").slice(0,2) + ":00";
+              hourCount.set(h, (hourCount.get(h) || 0) + 1);
+            }
+          }
+        }
+
+        // derive top room/hour
+        let topRoomKey = null, topRoomVal = -1;
+        for (const [k,v] of roomCount.entries()){
+          if (v > topRoomVal){ topRoomVal = v; topRoomKey = k; }
+        }
+        const topRoomName = ROOMS.find(r=>r.key===topRoomKey)?.name || "-";
+
+        let topHour = "-", topHourVal = -1;
+        for (const [h,v] of hourCount.entries()){
+          if (v > topHourVal){ topHourVal = v; topHour = h; }
+        }
+
+        document.getElementById("statTotal").textContent = total;
+        document.getElementById("statTopRoom").textContent = topRoomName.replace("ห้อง ","");
+        document.getElementById("statTopHour").textContent = topHour;
+
+        if (type === "byRoom"){
+          drawBarChart([...roomCount.entries()].map(([k,v]) => ({
+            label: (ROOMS.find(r=>r.key===k)?.name || k).replace("ห้อง ",""),
+            value: v
+          })));
+        } else {
+          // show fixed hours 08-17
+          const hours = [];
+          let t="08:00";
+          while (hmToMin(t) <= hmToMin("17:00")){
+            hours.push(t);
+            t = addMinutes(t, 60);
+          }
+          drawBarChart(hours.map(h=>({ label:h, value: hourCount.get(h)||0 })));
+        }
+
+        toast("อัปเดตสถิติแล้ว");
+
+      }catch(err){
+        toast(String(err.message || err));
+      }finally{
+        busy.style.display = "none";
+      }
+    }
+
+    function drawBarChart(data){
+      const canvas = document.getElementById("chart");
+      const ctx = canvas.getContext("2d");
+
+      // auto size by parent width
+      canvas.width = canvas.parentElement.clientWidth - 28;
+
+      // clear
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      const W = canvas.width, H = canvas.height;
+      const padL = 26, padR = 10, padT = 10, padB = 30;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+
+      const maxV = Math.max(1, ...data.map(d=>d.value));
+      const n = data.length;
+      const gap = clamp(innerW / (n*6), 6, 16);
+      const barW = (innerW - gap*(n-1)) / n;
+
+      // axis baseline
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "rgba(11,43,42,.14)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT + innerH);
+      ctx.lineTo(padL + innerW, padT + innerH);
+      ctx.stroke();
+
+      // bars (default canvas color; ไม่กำหนดสีเฉพาะแบบซีเรียส — แต่ให้มันอ่านง่าย)
+      for (let i=0;i<n;i++){
+        const x = padL + i*(barW + gap);
+        const v = data[i].value;
+        const h = Math.round((v / maxV) * innerH);
+        const y = padT + innerH - h;
+
+        // bar
+        ctx.fillStyle = "rgba(25, 118, 210, 0.85)";
+        ctx.fillRect(x, y, barW, h);
+
+        // value text
+        ctx.fillStyle = "rgba(11,43,42,.78)";
+        ctx.font = "800 12px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(String(v), x + barW/2, padT + innerH - 6);
+
+        // label
+        ctx.fillStyle = "rgba(11,43,42,.55)";
+        ctx.font = "900 11px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(data[i].label, x + barW/2, H - 10);
+      }
+    }
+
+    /************************************************************
+     * Tab switching
+     ************************************************************/
+    function setTab(name){
+      document.querySelectorAll(".tab").forEach(b=>{
+        b.classList.toggle("active", b.dataset.tab === name);
+      });
+      document.getElementById("tab-book").style.display = (name==="book") ? "" : "none";
+      document.getElementById("tab-list").style.display = (name==="list") ? "" : "none";
+      document.getElementById("tab-stats").style.display = (name==="stats") ? "" : "none";
+    }
+
+    /************************************************************
+     * Init
+     ************************************************************/
+    function wire(){
+      document.querySelectorAll(".tab").forEach(b=>{
+        b.addEventListener("click", () => setTab(b.dataset.tab));
+      });
+
+      document.getElementById("startTime").addEventListener("change", validateTimeRange);
+      document.getElementById("refreshBtn").addEventListener("click", loadBookingsForSelected);
+
+      // employee search: Enter to add (email), with smart match from list
+      const empSearch = document.getElementById("empSearch");
+      empSearch.addEventListener("keydown", (e)=>{
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const q = empSearch.value.trim();
+        if (!q) return;
+
+        // try match by email/name/nickname
+        const hit = state.employees.find(x=>{
+          const s = (x.email+" "+(x.name||"")+" "+(x.nickname||"")).toLowerCase();
+          return s.includes(q.toLowerCase());
+        });
+
+        if (hit?.email) addChip(hit.email);
+        else addChip(q); // allow manual email
+        empSearch.value = "";
+      });
+
+      document.getElementById("closeModal").onclick = () => showModal(false);
+      document.getElementById("cancelBtn").onclick = () => showModal(false);
+      document.getElementById("confirmBtn").onclick = confirmBooking;
+
+      document.getElementById("loadListBtn").onclick = loadList;
+      document.getElementById("updateStatsBtn").onclick = updateStats;
+
+      // default filterDate = today
+      document.getElementById("filterDate").value = ymdToday();
+    }
+
+    async function init(){
+      wire();
+      buildTimeOptions();
+
+      // calendar init to current month
+      const now = new Date();
+      state.calYear = now.getFullYear();
+      state.calMonth = now.getMonth();
+      state.selected = ymdToday();
+
+      renderCalendar();
+      updateDayTitle();
+
+      await ping();
+      await loadEmployees();
+      renderChips();
+
+      await loadBookingsForSelected();
+    }
+
+    init();
+  </script>
 </body>
 </html>
