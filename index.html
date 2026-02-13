@@ -457,34 +457,72 @@
       const deptSelect = document.getElementById('booking-department');
       const attendeeSelect = document.getElementById('attendee-select');
       const organizerEmailInput = document.getElementById('booking-organizer-email');
+      const attendeeEmailPreview = document.getElementById('attendee-email-preview');
 
-      // options
-      organizerSelect.innerHTML =
-        '<option value="">-- เลือกชื่อ --</option>' +
-        employees.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+      // --- helpers ---
+      const sortTh = (a, b) => String(a).localeCompare(String(b), 'th');
 
-      attendeeSelect.innerHTML =
-        '<option value="">-- เลือกผู้เข้าร่วม --</option>' +
-        employees.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+      function buildDeptOptions() {
+        departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean))).sort(sortTh);
+        deptSelect.innerHTML =
+          '<option value="">-- เลือกแผนก --</option>' +
+          departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+      }
 
-      departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'th'));
-      deptSelect.innerHTML =
-        '<option value="">-- เลือกแผนก --</option>' +
-        departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+      function buildPeopleOptions(filterDept, keepOrganizerName = '') {
+        const list = (filterDept ? employees.filter(e => e.department === filterDept) : employees).slice()
+          .sort((a,b) => sortTh(a.name, b.name));
 
-      // organizer -> auto fill dept + email
+        organizerSelect.innerHTML =
+          '<option value="">-- เลือกชื่อ --</option>' +
+          list.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+
+        attendeeSelect.innerHTML =
+          '<option value="">-- เลือกผู้เข้าร่วม --</option>' +
+          list.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+
+        // restore organizer if requested
+        if (keepOrganizerName) organizerSelect.value = keepOrganizerName;
+      }
+
+      // initial build
+      buildDeptOptions();
+      buildPeopleOptions('', '');
+
+      // dept -> filter people (organizer + attendees)
+      deptSelect.addEventListener('change', () => {
+        const dept = deptSelect.value || '';
+        organizerEmailInput.value = '';
+        organizerSelect.value = '';
+        attendeeSelect.value = '';
+        if (attendeeEmailPreview) attendeeEmailPreview.textContent = '-';
+
+        // clear selected attendees because filter has changed
+        attendeesList = [];
+        updateAttendeesDisplay();
+
+        buildPeopleOptions(dept, '');
+      });
+
+      // organizer -> auto fill dept + email + also filter attendee list to that dept
       organizerSelect.addEventListener('change', () => {
         const name = organizerSelect.value;
         const emp = employees.find(x => x.name === name);
+
         organizerEmailInput.value = emp?.email || '';
-        if (emp?.department) deptSelect.value = emp.department;
+
+        if (emp?.department) {
+          deptSelect.value = emp.department;
+          // rebuild people list under selected dept, keep organizer selected
+          buildPeopleOptions(emp.department, name);
+        }
       });
 
       // attendee select -> show email preview
       attendeeSelect.addEventListener('change', () => {
         const name = attendeeSelect.value;
         const emp = employees.find(x => x.name === name);
-        document.getElementById('attendee-email-preview').textContent = emp?.email || '-';
+        if (attendeeEmailPreview) attendeeEmailPreview.textContent = emp?.email || '-';
       });
     }
 
@@ -922,6 +960,9 @@ async function init() {
       isEditing = false;
       document.getElementById('modal-title').textContent = 'จองห้องประชุม';
       document.getElementById('booking-form').reset();
+      // reset department filter -> show all employees each time modal opens
+      const __deptSel = document.getElementById('booking-department');
+      if (__deptSel) { __deptSel.value = ''; __deptSel.dispatchEvent(new Event('change')); }
       document.getElementById('booking-id').value = '';
       document.getElementById('recurrence-group-id').value = '';
       document.getElementById('conflict-warning').classList.add('hidden');
