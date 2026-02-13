@@ -878,9 +878,143 @@ function removeAttendee(index) {
       return `${parseInt(day)} ${thaiMonths[parseInt(month) - 1]} ${parseInt(year) + 543}`;
     }
 
-    function toggleRecurrencePicker() {
-      document.getElementById('date-picker').classList.add('hidden');
+    function toggleRecurrencePicker(forceOpen = null) {
+      const picker = document.getElementById('recurrence-picker');
+      const btn = document.getElementById('recurrence-end-display');
+      if (!picker || !btn) return;
+
+      // Always close the main date picker when opening recurrence picker (avoid overlap)
+      const mainPicker = document.getElementById('date-picker');
+      if (mainPicker) mainPicker.classList.add('hidden');
+
+      const willOpen = (forceOpen === true) ? true : (forceOpen === false) ? false : picker.classList.contains('hidden');
+
+      if (!willOpen) {
+        picker.classList.add('hidden');
+        return;
+      }
+
+      // init month cursor from selected recurrence end, else from booking date, else today
+      const endVal = (document.getElementById('recurrence-end')?.value || '').trim();
+      const bookingVal = (document.getElementById('booking-date')?.value || '').trim();
+      let base = null;
+
+      if (endVal && /^\d{4}-\d{2}-\d{2}$/.test(endVal)) base = new Date(endVal + 'T00:00:00');
+      else if (bookingVal && /^\d{4}-\d{2}-\d{2}$/.test(bookingVal)) base = new Date(bookingVal + 'T00:00:00');
+      else base = new Date();
+
+      // month cursor (1st day of month)
+      window.recurrencePickerDate = new Date(base.getFullYear(), base.getMonth(), 1);
+
+      // keep selected value for highlight
+      window.selectedRecurrenceEnd = endVal;
+
+      picker.classList.remove('hidden');
+      updateRecurrencePickerMonth();
+
+      // Position picker under the button (within modal)
+      try {
+        const container = btn.closest('.field');
+        if (container) {
+          picker.style.left = '0px';
+          picker.style.top = (btn.offsetTop + btn.offsetHeight + 8) + 'px';
+        }
+      } catch(e){}
+
+      // Close on outside click
+      if (!window.__recurrenceOutsideClickBound) {
+        window.__recurrenceOutsideClickBound = true;
+        document.addEventListener('mousedown', (ev) => {
+          const p = document.getElementById('recurrence-picker');
+          const b = document.getElementById('recurrence-end-display');
+          if (!p || p.classList.contains('hidden')) return;
+          if (p.contains(ev.target) || (b && b.contains(ev.target))) return;
+          p.classList.add('hidden');
+        });
+      }
     }
+
+    function prevRecurrenceMonth() {
+      if (!window.recurrencePickerDate) window.recurrencePickerDate = new Date();
+      window.recurrencePickerDate.setMonth(window.recurrencePickerDate.getMonth() - 1);
+      window.recurrencePickerDate.setDate(1);
+      updateRecurrencePickerMonth();
+    }
+
+    function nextRecurrenceMonth() {
+      if (!window.recurrencePickerDate) window.recurrencePickerDate = new Date();
+      window.recurrencePickerDate.setMonth(window.recurrencePickerDate.getMonth() + 1);
+      window.recurrencePickerDate.setDate(1);
+      updateRecurrencePickerMonth();
+    }
+
+    function updateRecurrencePickerMonth() {
+      const label = document.getElementById('recurrence-month-label');
+      const grid = document.getElementById('recurrence-picker-grid');
+      if (!label || !grid) return;
+
+      const d = window.recurrencePickerDate || new Date();
+      const year = d.getFullYear();
+      const month = d.getMonth(); // 0-11
+
+      label.textContent = thaiMonths[month] + ' ' + year;
+
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month + 1, 0);
+      const startDay = first.getDay(); // 0=Sun
+      const daysInMonth = last.getDate();
+
+      // min end date = booking date (can't end before first occurrence)
+      const bookingVal = (document.getElementById('booking-date')?.value || '').trim();
+      const minDate = (bookingVal && /^\d{4}-\d{2}-\d{2}$/.test(bookingVal)) ? new Date(bookingVal + 'T00:00:00') : null;
+
+      grid.innerHTML = '';
+
+      // leading blanks
+      for (let i=0; i<startDay; i++){
+        const cell = document.createElement('div');
+        grid.appendChild(cell);
+      }
+
+      // day buttons
+      for (let day=1; day<=daysInMonth; day++){
+        const cur = new Date(year, month, day);
+        const ymd = cur.toISOString().slice(0,10);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = String(day);
+        btn.className = 'h-9 w-9 rounded-lg text-sm font-medium hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+
+        const isBeforeMin = minDate && cur.getTime() < minDate.getTime();
+        if (isBeforeMin) {
+          btn.disabled = true;
+          btn.className = 'h-9 w-9 rounded-lg text-sm font-medium text-slate-300 cursor-not-allowed';
+        } else {
+          btn.addEventListener('click', () => setRecurrenceEndDate(ymd));
+        }
+
+        if (window.selectedRecurrenceEnd && window.selectedRecurrenceEnd === ymd) {
+          btn.className = 'h-9 w-9 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+        }
+
+        grid.appendChild(btn);
+      }
+    }
+
+    function setRecurrenceEndDate(ymd) {
+      const hidden = document.getElementById('recurrence-end');
+      const display = document.getElementById('recurrence-end-display');
+      const picker = document.getElementById('recurrence-picker');
+      if (!hidden || !display) return;
+
+      hidden.value = ymd;
+      display.textContent = formatDateDisplay(ymd);
+      window.selectedRecurrenceEnd = ymd;
+
+      if (picker) picker.classList.add('hidden');
+    }
+
 
     function navigateMonth(direction) {
       if (currentView === 'month') {
