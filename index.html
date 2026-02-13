@@ -19,6 +19,20 @@
       --ok:#16a34a;
       --shadow:0 18px 60px rgba(15,23,42,.10);
       --r:18px;
+
+      /* Layout tuning */
+      --wrap-max: 1100px;
+      --wrap-pad-x: 26px;
+      --wrap-pad-y: 34px;
+
+      /* Grid gaps */
+      --rooms-gap-x: 46px;
+      --rooms-gap-y: 36px;
+
+      /* Breakpoints tuned for 1920 @ 150% (~1280px CSS width) */
+      --bp-zoom150: 1400px;  /* <=1400px => treat as "150% zone" for laptop */
+      --bp-tablet: 980px;
+      --bp-mobile: 720px;
     }
     *{box-sizing:border-box}
     body{
@@ -27,7 +41,13 @@
       background: var(--bg);
       color:var(--ink);
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:34px 26px}
+
+    /* Keep centered and readable (1100-1200 target) */
+    .wrap{
+      max-width: var(--wrap-max);
+      margin:0 auto;
+      padding: var(--wrap-pad-y) var(--wrap-pad-x);
+    }
 
     .top{
       display:flex;
@@ -35,15 +55,20 @@
       justify-content:space-between;
       gap:16px;
       margin-bottom:22px;
+
+      /* Requirement: at 150% still one row */
+      flex-wrap: nowrap;
     }
     .brandRow{
       display:flex;
       align-items:flex-start;
       gap:14px;
+      min-width: 0;
     }
     .brandLogo{
       width:64px;height:64px;object-fit:contain;
       border-radius:14px;background:#fff;
+      flex:0 0 auto;
     }
 
     .badge{
@@ -54,25 +79,38 @@
       box-shadow:0 6px 18px rgba(15,23,42,.06);
       margin-top:8px;
       flex:0 0 auto;
+
+      /* Prevent shrinking/overlap in top bar */
+      white-space:nowrap;
     }
     .dot{width:9px;height:9px;border-radius:50%}
     .dot.ok{background:var(--ok)}
     .dot.no{background:var(--danger)}
 
+    /* ROOMS GRID */
     .rooms{
       display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:36px 46px;
+      grid-template-columns:repeat(2, 1fr); /* default: 2 cols */
+      gap: var(--rooms-gap-y) var(--rooms-gap-x);
       align-items:stretch;
       margin-top:8px;
     }
+
+    /* Tablet-ish: tighter padding/gaps but keep layout logic */
     @media (max-width: 980px){
       .wrap{padding:22px 16px}
       .rooms{gap:22px 18px}
-
     }
+
+    /* KEY: Force 1 column in "150% zone" for 1920-based laptops (~1280px width) */
+    @media (max-width: 1400px){
+      .rooms{grid-template-columns:1fr;}
+    }
+
+    /* Mobile */
     @media (max-width: 720px){
-      .top{flex-direction:column;align-items:flex-start}
+      /* requirement: top bar 150% still one row; but for real mobile we must stack */
+      .top{flex-direction:column;align-items:flex-start;flex-wrap:wrap}
       .badge{margin-top:0}
       .rooms{grid-template-columns:1fr}
     }
@@ -87,7 +125,9 @@
       box-shadow:0 14px 44px rgba(15,23,42,.07);
       overflow:hidden;
       border:2.5px solid rgba(var(--accent-rgb), 1);
-      min-height:330px;
+
+      /* allow height to grow by content */
+      min-height: 0;
     }
     .roomCard:hover{transform:translateY(-2px)}
     .tileInner{
@@ -98,12 +138,14 @@
       display:flex;
       flex-direction:column;
       gap:14px;
+      min-height: 0;
     }
     .tileTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
+      min-width: 0;
     }
     .titlePill{
       display:inline-flex;
@@ -118,9 +160,13 @@
       line-height:1.05;
       font-size:18px;
       max-width:70%;
+      min-width: 0;
     }
     .titlePill .stack{display:flex;flex-direction:column;gap:2px}
-    .stoneIcon{width:64px;height:64px;object-fit:contain;flex:0 0 auto;margin-top:2px}
+    .stoneIcon{
+      width:64px;height:64px;object-fit:contain;
+      flex:0 0 auto;margin-top:2px
+    }
     .bulletBox{
       border-radius:16px;
       border:2px solid rgba(var(--accent-rgb), 1);
@@ -128,11 +174,13 @@
       background:#fff;
       box-shadow:0 10px 24px rgba(15,23,42,.05);
       margin-top:auto;
+      min-height: 0;
     }
     .bulletBox ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px}
     .bulletBox li{color:#0f172a;font-size:14px;line-height:1.25}
     .bulletBox b{font-weight:950}
 
+    /* Modal */
     .modalOverlay{
       position:fixed;inset:0;
       background:rgba(2,6,23,.42);
@@ -153,6 +201,7 @@
       display:flex;align-items:center;justify-content:space-between;gap:10px;
       padding:14px 16px;border-bottom:1px solid rgba(15,23,42,.10);
       background:#fbfcff;
+      min-width:0;
     }
     .modalTitle{font-weight:900;color:var(--ink)}
     .hint{font-size:12px;color:var(--muted)}
@@ -170,6 +219,7 @@
       padding:8px 10px;
       cursor:pointer;
       font-weight:900;
+      flex:0 0 auto;
     }
     .xbtn:hover{background:#f3f6ff}
 
@@ -209,6 +259,7 @@
     }
     .btn.ghost:hover{background:#f3f6ff}
 
+    /* LIST (Room bookings) */
     .list{
       border:1px solid rgba(15,23,42,.12);
       border-radius:18px;
@@ -221,6 +272,7 @@
       gap:10px;
       padding:10px 12px;
       align-items:center;
+      min-width:0;
     }
     .listHead{
       background:#f7f9fd;
@@ -236,6 +288,46 @@
       background:#fff;
     }
     .listRow:last-child{border-bottom:0}
+
+    /* 150% / narrow desktop: stacked 2 rows (time+title / dept+booker) */
+    @media (max-width: 1400px){
+      .listHead{display:none;} /* stacked view doesn't need header; cleaner */
+      .listRow{
+        grid-template-columns: 140px 1fr;
+        grid-template-areas:
+          "time title"
+          "dept booker";
+        row-gap:8px;
+        column-gap:10px;
+        align-items:start;
+      }
+      /* Force the 4 cells to map into areas (depends on current DOM order: time, title, dept, booker) */
+      .listRow > :nth-child(1){grid-area:time;}
+      .listRow > :nth-child(2){grid-area:title;}
+      .listRow > :nth-child(3){grid-area:dept;}
+      .listRow > :nth-child(4){grid-area:booker;}
+
+      .listRow > :nth-child(2),
+      .listRow > :nth-child(3),
+      .listRow > :nth-child(4){
+        min-width:0;
+        word-break:break-word;
+      }
+    }
+
+    /* Mobile requirement: keep 4 columns but allow horizontal scroll */
+    @media (max-width: 720px){
+      .list{
+        overflow-x:auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .listHead,.listRow{
+        display:grid;
+        grid-template-columns: 140px 1fr 200px 1fr;
+        min-width: 760px; /* enables scroll; keeps columns readable */
+      }
+      .listHead{display:grid;} /* show header again on mobile scroll layout */
+    }
 
     .pill{
       display:inline-flex;align-items:center;gap:8px;
