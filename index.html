@@ -534,33 +534,48 @@ async function init() {
       }
     }
 
-
-      document.getElementById('recurrence-type').addEventListener('change', function() {
-        const container = document.getElementById('recurrence-end-container');
-        if (this.value !== 'none') {
-          container.classList.remove('hidden');
-        } else {
-          container.classList.add('hidden');
+    // -----------------------
+    // DOM Ready: bind listeners + start app
+    // -----------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const rt = document.getElementById('recurrence-type');
+        if (rt) {
+          rt.addEventListener('change', function() {
+            const container = document.getElementById('recurrence-end-container');
+            if (!container) return;
+            if (this.value !== 'none') container.classList.remove('hidden');
+            else container.classList.add('hidden');
+          });
         }
-      });
 
-      document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+        const form = document.getElementById('booking-form');
+        if (form) form.addEventListener('submit', handleBookingSubmit);
 
-      ['booking-date', 'booking-start', 'booking-end'].forEach(id => {
-        document.getElementById(id).addEventListener('change', checkConflict);
-      });
-      document.querySelectorAll('input[name="room"]').forEach(input => {
-        input.addEventListener('change', checkConflict);
-      });
+        ['booking-date', 'booking-start', 'booking-end'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('change', checkConflict);
+        });
 
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.relative')) {
-          document.getElementById('date-picker').classList.add('hidden');
-        }
-      });
+        document.querySelectorAll('input[name="room"]').forEach(input => {
+          input.addEventListener('change', checkConflict);
+        });
 
-      renderCalendar();
-    }
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.relative')) {
+            const dp = document.getElementById('date-picker');
+            if (dp) dp.classList.add('hidden');
+          }
+        });
+
+        // Start app
+        init();
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+
 
     function addAttendee() {
       const select = document.getElementById('attendee-select');
@@ -1260,5 +1275,4 @@ function showToast(message) {
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd17d93c49645c0',t:'MTc3MDk1NTk3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
