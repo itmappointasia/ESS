@@ -1,12 +1,13 @@
-<!doctype html>
-<html lang="th" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-  <title>Meeting Room Booking</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
-  <style>
+<!DOCTYPE html>
+
+<html class="h-full" lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>Meeting Room Booking</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
     * { 
       font-family: 'Kanit', sans-serif;
       box-sizing: border-box;
@@ -99,285 +100,423 @@
       margin-left: 0.5rem;
     }
   </style>
-  <style>body { box-sizing: border-box; }</style>
- </head>
- <body class="h-full bg-slate-50 overflow-hidden">
-  <div id="app" class="h-full w-full flex flex-col"><!-- Header -->
-   <header class="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between flex-shrink-0">
-    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-     <div class="w-8 h-8 sm:w-10 sm:h-10 room-mind rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center">
-      <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-     </div>
-     <div class="min-w-0 flex-1">
-      <h1 id="app-title" class="text-base sm:text-xl font-semibold text-slate-800 truncate">Meeting Room Booking</h1>
-      <p class="text-xs text-slate-500 hidden sm:block">ระบบจองห้องประชุม</p>
-     </div>
-    </div><button onclick="openBookingModal()" class="bg-emerald-200 text-emerald-900 px-2 sm:px-4 py-2 rounded-lg font-medium flex items-center gap-1 sm:gap-2 hover:bg-emerald-300 transition text-xs sm:text-base whitespace-nowrap flex-shrink-0">
-     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-     </svg><span class="hidden sm:inline">จองห้องประชุม</span> <span class="sm:hidden">จอง</span> </button>
-   </header><!-- Navigation -->
-   <div class="bg-white border-b border-slate-200 px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between flex-shrink-0 overflow-x-auto">
-    <div class="flex items-center gap-1 sm:gap-2"><button onclick="navigateMonth(-1)" class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg></button> <button onclick="goToToday()" class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-emerald-900 bg-emerald-200 hover:bg-emerald-300 rounded-lg transition whitespace-nowrap">วันนี้</button> <button onclick="navigateMonth(1)" class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg></button>
-     <h2 id="current-month" class="text-sm sm:text-lg font-semibold text-slate-800 ml-1 sm:ml-2 whitespace-nowrap"></h2>
-    </div>
-    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0"><select id="view-mode" onchange="changeView(this.value)" class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"> <option value="month">เดือน</option> <option value="week">สัปดาห์</option> <option value="day">วัน</option> </select> <select id="room-filter" onchange="filterByRoom(this.value)" class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"> <option value="all">ทุกห้อง</option> <option value="Mind Room">🟡 Mind</option> <option value="Reality Room">🔴 Reality</option> <option value="Power Room">🟣 Power</option> <option value="Space Room">🔵 Space</option> </select>
-    </div>
-   </div><!-- Room Legend -->
-   <div class="bg-white border-b border-slate-200 px-2 sm:px-4 py-1.5 flex items-center gap-2 sm:gap-4 flex-shrink-0 overflow-x-auto text-xs sm:text-sm"><span class="text-slate-500 flex-shrink-0">ห้อง:</span>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-mind"></span> <span class="text-slate-700">Mind</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-reality"></span> <span class="text-slate-700">Reality</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-power"></span> <span class="text-slate-700">Power</span>
-    </div>
-    <div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-space"></span> <span class="text-slate-700">Space</span>
-    </div>
-   </div><!-- Calendar Container -->
-   <div id="calendar-container" class="flex-1 overflow-auto p-2 sm:p-4"><!-- Calendar will be rendered here -->
-   </div>
-  </div><!-- Booking Modal -->
-  <div id="booking-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
-   <div class="bg-white rounded-2xl w-full max-h-[90vh] sm:max-h-[85vh] overflow-y-auto slide-in max-w-lg">
-    <div class="p-3 sm:p-6 border-b border-slate-200 sticky top-0 bg-white rounded-t-2xl">
-     <div class="flex items-center justify-between">
-      <h3 id="modal-title" class="text-lg sm:text-xl font-semibold text-slate-800">จองห้องประชุม</h3><button onclick="closeBookingModal()" class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0">
-       <svg class="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-       </svg></button>
-     </div>
-    </div>
-    <form id="booking-form" class="p-3 sm:p-6 space-y-3 sm:space-y-4"><input type="hidden" id="booking-id"> <input type="hidden" id="recurrence-group-id">
-     <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">หัวเรื่องการประชุม *</label> <input type="text" id="booking-title" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" placeholder="เช่น ประชุมทีม Marketing">
-     </div>
-     <div class="grid grid-cols-2 gap-2 sm:gap-4">
-  <div>
-    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก *</label>
-    <select id="booking-department" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
-      <option value="">-- เลือกแผนก --</option>
-    </select>
-    <p class="mt-1 text-[11px] sm:text-xs text-slate-500">* ต้องเลือกแผนกก่อน จึงจะเลือกผู้จองได้</p>
-  </div>
-  <div>
-    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ผู้จองห้อง *</label>
-    <select id="booking-organizer" required disabled class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm disabled:bg-slate-100 disabled:text-slate-500">
-      <option value="">-- เลือกชื่อ --</option>
-    </select>
-    <div class="mt-2">
-      <label class="block text-[11px] sm:text-xs font-medium text-slate-600 mb-1">อีเมลผู้จอง</label>
-      <input type="text" id="booking-organizer-email" readonly class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 outline-none text-xs sm:text-sm" placeholder="เลือกชื่อเพื่อแสดงอีเมล">
-    </div>
-  </div>
+<style>body { box-sizing: border-box; }</style>
+</head>
+<body class="h-full bg-slate-50 overflow-hidden">
+<div class="h-full w-full flex flex-col" id="app"><!-- Header -->
+<header class="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between flex-shrink-0">
+<div class="flex items-center gap-2 sm:gap-3 min-w-0">
+<div class="w-8 h-8 sm:w-10 sm:h-10 room-mind rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center">
+<svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
 </div>
+<div class="min-w-0 flex-1">
+<h1 class="text-base sm:text-xl font-semibold text-slate-800 truncate" id="app-title">Meeting Room Booking</h1>
+<p class="text-xs text-slate-500 hidden sm:block">ระบบจองห้องประชุม</p>
 </div>
-     <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ห้องประชุม *</label>
-      <div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"> <input type="radio" name="room" value="Mind Room" class="peer hidden" required>
-        <div class="p-2 sm:p-3 border-2 border-slate-200 rounded-lg peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition text-xs sm:text-sm">
-         <div class="flex items-center gap-2"><span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full room-mind flex-shrink-0"></span> <span class="font-medium text-slate-700">Mind Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Reality Room" class="peer hidden">
-        <div class="p-2 sm:p-3 border-2 border-slate-200 rounded-lg peer-checked:border-red-500 peer-checked:bg-red-50 transition text-xs sm:text-sm">
-         <div class="flex items-center gap-2"><span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full room-reality flex-shrink-0"></span> <span class="font-medium text-slate-700">Reality Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Power Room" class="peer hidden">
-        <div class="p-2 sm:p-3 border-2 border-slate-200 rounded-lg peer-checked:border-purple-500 peer-checked:bg-purple-50 transition text-xs sm:text-sm">
-         <div class="flex items-center gap-2"><span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full room-power flex-shrink-0"></span> <span class="font-medium text-slate-700">Power Room</span>
-         </div>
-        </div></label> <label class="cursor-pointer"> <input type="radio" name="room" value="Space Room" class="peer hidden">
-        <div class="p-2 sm:p-3 border-2 border-slate-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 transition text-xs sm:text-sm">
-         <div class="flex items-center gap-2"><span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full room-space flex-shrink-0"></span> <span class="font-medium text-slate-700">Space Room</span>
-         </div>
-        </div></label>
-      </div>
-     </div>
-     <div class="grid grid-cols-2 gap-2 sm:gap-4">
-      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">วันที่ *</label>
-       <div class="relative"><input type="text" id="booking-date-display" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none cursor-pointer bg-white text-xs sm:text-sm" onclick="toggleDatePicker()" readonly placeholder="เลือกวันที่"> <input type="hidden" id="booking-date">
-        <div id="date-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-20 p-3 sm:p-4 w-72">
-         <div>
-          <div class="flex items-center justify-between mb-4"><button type="button" onclick="prevPickerMonth()" class="p-1 sm:p-1.5 hover:bg-slate-100 rounded-lg transition">
-            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg></button>
-           <div id="picker-month-label" class="font-semibold text-slate-800 text-xs sm:text-sm"></div><button type="button" onclick="nextPickerMonth()" class="p-1 sm:p-1.5 hover:bg-slate-100 rounded-lg transition">
-            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg></button>
-          </div>
-          <div class="grid grid-cols-7 gap-1 mb-2 text-xs">
-           <div class="text-center text-slate-500 font-medium p-1">
-            อา
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            จ
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            อ
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            พ
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            พฤ
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            ศ
-           </div>
-           <div class="text-center text-slate-500 font-medium p-1">
-            ส
-           </div>
-          </div>
-          <div id="date-picker-grid" class="grid grid-cols-7 gap-1"></div>
-         </div>
-        </div>
-       </div>
-      </div>
-      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">การจองซ้ำ</label> <select id="recurrence-type" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> <option value="none">ไม่ซ้ำ</option> <option value="daily">ทุกวัน</option> <option value="weekly">ทุกสัปดาห์</option> <option value="biweekly">ทุก 2 สัปดาห์</option> <option value="monthly">ทุกเดือน</option> </select>
-      </div>
-     </div>
-     <div id="recurrence-end-container" class="hidden">
-  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">สิ้นสุดการจองซ้ำ *</label>
-  <input type="date" id="recurrence-end" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm bg-white">
-  <p class="mt-1 text-[11px] sm:text-xs text-slate-500">ระบุวันที่สิ้นสุดเพื่อสร้างรายการจองซ้ำอัตโนมัติ</p>
+</div><button class="bg-emerald-200 text-emerald-900 px-2 sm:px-4 py-2 rounded-lg font-medium flex items-center gap-1 sm:gap-2 hover:bg-emerald-300 transition text-xs sm:text-base whitespace-nowrap flex-shrink-0" onclick="openBookingModal()">
+<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="hidden sm:inline">จองห้องประชุม</span> <span class="sm:hidden">จอง</span> </button>
+</header><!-- Navigation -->
+<div class="bg-white border-b border-slate-200 px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between flex-shrink-0 overflow-x-auto">
+<div class="flex items-center gap-1 sm:gap-2"><button class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0" onclick="navigateMonth(-1)">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg></button> <button class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-emerald-900 bg-emerald-200 hover:bg-emerald-300 rounded-lg transition whitespace-nowrap" onclick="goToToday()">วันนี้</button> <button class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0" onclick="navigateMonth(1)">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg></button>
+<h2 class="text-sm sm:text-lg font-semibold text-slate-800 ml-1 sm:ml-2 whitespace-nowrap" id="current-month"></h2>
 </div>
-
-<div class="grid grid-cols-2 gap-2 sm:gap-4">
-
-      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาเริ่มต้น *</label> <select id="booking-start" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> </select>
-      </div>
-      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาสิ้นสุด *</label> <select id="booking-end" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> </select>
-      </div>
-     </div>
-     <div>
-  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ผู้เข้าร่วมการประชุม</label>
-  <button type="button" onclick="openAttendeeModal()" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base flex items-center justify-center gap-2">
-    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-    ผู้เข้าร่วมการประชุม
-  </button>
-  <div class="mt-2">
-    <div class="text-[11px] sm:text-xs text-slate-500 mb-1">รายชื่อที่เลือก:</div>
-    <div id="attendees-display" class="flex flex-wrap gap-0"></div>
-  </div>
+<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0"><select class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none" id="view-mode" onchange="changeView(this.value)"> <option value="month">เดือน</option> <option value="week">สัปดาห์</option> <option value="day">วัน</option> </select> <select class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none" id="room-filter" onchange="filterByRoom(this.value)"> <option value="all">ทุกห้อง</option> <option value="Mind Room">🟡 Mind</option> <option value="Reality Room">🔴 Reality</option> <option value="Power Room">🟣 Power</option> <option value="Space Room">🔵 Space</option> </select>
 </div>
-<div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รายละเอียด</label> <textarea id="booking-description" rows="3" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none resize-none text-xs sm:text-sm" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-     </div>
-     <div id="conflict-warning" class="hidden p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-      <div class="flex items-center gap-2 text-red-700 text-xs sm:text-sm">
-       <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-       </svg><span class="font-medium">ห้องประชุมนี้ถูกจองในช่วงเวลาดังกล่าวแล้ว</span>
+</div><!-- Room Legend -->
+<div class="bg-white border-b border-slate-200 px-2 sm:px-4 py-1.5 flex items-center gap-2 sm:gap-4 flex-shrink-0 overflow-x-auto text-xs sm:text-sm"><span class="text-slate-500 flex-shrink-0">ห้อง:</span>
+<div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-mind"></span> <span class="text-slate-700">Mind</span>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-reality"></span> <span class="text-slate-700">Reality</span>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-power"></span> <span class="text-slate-700">Power</span>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full room-space"></span> <span class="text-slate-700">Space</span>
+</div>
+</div><!-- Calendar Container -->
+<div class="flex-1 overflow-auto p-2 sm:p-4" id="calendar-container"><!-- Calendar will be rendered here -->
+</div>
+</div><!-- Booking Modal -->
+<div id="booking-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
+  <!-- Dialog -->
+  <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden slide-in flex flex-col max-h-[90vh]">
+    <!-- Header -->
+    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
+      <div class="min-w-0">
+        <h3 id="modal-title" class="text-lg sm:text-xl font-semibold text-slate-800 truncate">จองห้องประชุม</h3>
+        <p class="text-xs text-slate-500 mt-0.5 hidden sm:block">กรอกข้อมูลให้ครบถ้วนก่อนบันทึก</p>
       </div>
-     </div>
-     <div class="flex gap-2 sm:gap-3 pt-2 sm:pt-4"><button type="button" onclick="closeBookingModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition text-xs sm:text-base">ยกเลิก</button> <button type="submit" id="submit-btn" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-emerald-200 text-emerald-900 rounded-lg font-medium hover:bg-emerald-300 transition text-xs sm:text-base">บันทึก</button>
-     </div>
-    </form>
-   </div>
-  </div><!-- View Booking Modal -->
-  <div id="view-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
-   <div class="bg-white rounded-2xl w-full max-w-md slide-in">
-    <div id="view-modal-header" class="p-3 sm:p-6 rounded-t-2xl">
-     <div class="flex items-center justify-between">
-      <h3 id="view-title" class="text-base sm:text-xl font-semibold text-white truncate"></h3><button onclick="closeViewModal()" class="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition flex-shrink-0">
-       <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-       </svg></button>
-     </div>
-    </div>
-    <div class="p-3 sm:p-6 space-y-3 sm:space-y-4">
-     <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg><span id="view-room" class="text-slate-700"></span>
-     </div>
-     <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg><span id="view-date" class="text-slate-700"></span>
-     </div>
-     <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg><span id="view-time" class="text-slate-700"></span>
-     </div>
-     <div id="view-organizer-container" class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-      <div>
-       <div class="text-slate-500">
-        ผู้จองห้อง
-       </div><span id="view-organizer" class="text-slate-700 font-medium"></span>
-      </div>
-     </div>
-     <div id="view-dept-container" class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-      <div>
-       <div class="text-slate-500">
-        แผนก
-       </div><span id="view-dept" class="text-slate-700 font-medium"></span>
-      </div>
-     </div>
-     <div id="view-recurrence-container" class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg><span id="view-recurrence" class="text-slate-700"></span>
-     </div>
-     <div id="view-attendees-container" class="flex items-start gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-      <div id="view-attendees" class="text-slate-700"></div>
-     </div>
-     <div id="view-description-container" class="flex items-start gap-2 sm:gap-3 text-xs sm:text-base">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-      </svg><span id="view-description" class="text-slate-700"></span>
-     </div>
-     <div class="flex gap-2 sm:gap-3 pt-2 sm:pt-4"><button onclick="editBooking()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2 text-xs sm:text-base">
-       <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-       </svg><span class="hidden sm:inline">แก้ไข</span> </button> <button onclick="showDeleteConfirm()" id="delete-btn" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2 text-xs sm:text-base">
-       <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-       </svg><span class="hidden sm:inline">ลบ</span> </button>
-     </div>
-     <div id="delete-confirm" class="hidden pt-2">
-      <div class="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-       <p class="text-xs sm:text-sm text-red-700 mb-2 sm:mb-3">คุณต้องการลบการจองนี้หรือไม่?</p>
-       <div id="delete-options" class="space-y-1 sm:space-y-2"><button onclick="deleteBooking('single')" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-red-200 text-red-700 rounded-lg hover:bg-red-50 transition">ลบเฉพาะรายการนี้</button> <button onclick="deleteBooking('all')" id="delete-all-btn" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition">ลบทั้งหมด</button>
-       </div><button onclick="hideDeleteConfirm()" class="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition">ยกเลิก</button>
-      </div>
-     </div>
-    </div>
-   </div>
-  </div><!-- Attendees Modal -->
-<div id="attendee-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
-  <div class="bg-white rounded-2xl w-full max-w-md slide-in overflow-hidden">
-    <div class="p-3 sm:p-5 border-b border-slate-200 flex items-center justify-between">
-      <h3 class="text-base sm:text-lg font-semibold text-slate-800">เลือกผู้เข้าร่วมการประชุม</h3>
-      <button type="button" onclick="closeAttendeeModal()" class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition">
-        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button type="button" onclick="closeBookingModal()" class="p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0" aria-label="Close">
+        <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
-    <div class="p-3 sm:p-5 space-y-3">
+
+    <!-- Body (scroll) -->
+    <form id="booking-form" class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+      <input type="hidden" id="booking-id">
+      <input type="hidden" id="recurrence-group-id">
+
+      <div>
+        <label for="booking-title" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">หัวเรื่องการประชุม <span class="text-red-500">*</span></label>
+        <input type="text" id="booking-title" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm" placeholder="เช่น ประชุมทีม Marketing">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <!-- Department first -->
+        <div>
+          <label for="booking-department" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก <span class="text-red-500">*</span></label>
+          <select id="booking-department" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+            <option value="">-- เลือกแผนก --</option>
+          </select>
+          <p class="text-[11px] text-slate-500 mt-1">* ต้องเลือกแผนกก่อน จึงจะเลือกผู้จองได้</p>
+        </div>
+
+        <div>
+          <label for="booking-organizer" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ผู้จองห้อง <span class="text-red-500">*</span></label>
+          <select id="booking-organizer" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm" disabled>
+            <option value="">-- เลือกแผนกก่อน --</option>
+          </select>
+
+          <div class="mt-2">
+            <label for="booking-organizer-email" class="block text-[11px] sm:text-xs font-medium text-slate-600 mb-1">อีเมลผู้จอง</label>
+            <input type="text" id="booking-organizer-email" readonly class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 outline-none text-xs sm:text-sm" placeholder="เลือกชื่อเพื่อแสดงอีเมล">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ห้องประชุม <span class="text-red-500">*</span></label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="room" value="Mind Room" class="peer hidden" required>
+            <div class="p-3 border-2 border-slate-200 rounded-xl peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition text-sm">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full room-mind flex-shrink-0"></span>
+                <span class="font-medium text-slate-700">Mind Room</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="cursor-pointer">
+            <input type="radio" name="room" value="Reality Room" class="peer hidden">
+            <div class="p-3 border-2 border-slate-200 rounded-xl peer-checked:border-red-500 peer-checked:bg-red-50 transition text-sm">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full room-reality flex-shrink-0"></span>
+                <span class="font-medium text-slate-700">Reality Room</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="cursor-pointer">
+            <input type="radio" name="room" value="Power Room" class="peer hidden">
+            <div class="p-3 border-2 border-slate-200 rounded-xl peer-checked:border-purple-500 peer-checked:bg-purple-50 transition text-sm">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full room-power flex-shrink-0"></span>
+                <span class="font-medium text-slate-700">Power Room</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="cursor-pointer">
+            <input type="radio" name="room" value="Space Room" class="peer hidden">
+            <div class="p-3 border-2 border-slate-200 rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-50 transition text-sm">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full room-space flex-shrink-0"></span>
+                <span class="font-medium text-slate-700">Space Room</span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">วันที่ <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input type="text" id="booking-date-display" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none cursor-pointer bg-white text-sm" onclick="toggleDatePicker()" readonly placeholder="เลือกวันที่">
+            <input type="hidden" id="booking-date">
+            <div id="date-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-20 p-3 sm:p-4 w-72">
+              <div class="flex items-center justify-between mb-3">
+                <button type="button" onclick="prevPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition" aria-label="Prev month">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div id="picker-month-label" class="font-semibold text-slate-800 text-sm"></div>
+                <button type="button" onclick="nextPickerMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition" aria-label="Next month">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              <div class="grid grid-cols-7 gap-1 mb-2 text-xs">
+                <div class="text-center text-slate-500 font-medium p-1">อา</div>
+                <div class="text-center text-slate-500 font-medium p-1">จ</div>
+                <div class="text-center text-slate-500 font-medium p-1">อ</div>
+                <div class="text-center text-slate-500 font-medium p-1">พ</div>
+                <div class="text-center text-slate-500 font-medium p-1">พฤ</div>
+                <div class="text-center text-slate-500 font-medium p-1">ศ</div>
+                <div class="text-center text-slate-500 font-medium p-1">ส</div>
+              </div>
+              <div id="date-picker-grid" class="grid grid-cols-7 gap-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">การจองซ้ำ</label>
+          <select id="recurrence-type" class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+            <option value="none">ไม่ซ้ำ</option>
+            <option value="daily">ทุกวัน</option>
+            <option value="weekly">ทุกสัปดาห์</option>
+            <option value="biweekly">ทุก 2 สัปดาห์</option>
+            <option value="monthly">ทุกเดือน</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="recurrence-end-container" class="hidden">
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">สิ้นสุดการจองซ้ำ</label>
+        <div class="relative">
+          <input type="text" id="recurrence-end-display" class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none cursor-pointer bg-white text-sm" onclick="toggleRecurrencePicker()" readonly placeholder="เลือกวันที่">
+          <input type="hidden" id="recurrence-end">
+          <div id="recurrence-picker" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-20 p-3 sm:p-4 w-72">
+            <div class="flex items-center justify-between mb-3">
+              <button type="button" onclick="prevRecurrenceMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition" aria-label="Prev month">
+                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div id="recurrence-month-label" class="font-semibold text-slate-800 text-sm"></div>
+              <button type="button" onclick="nextRecurrenceMonth()" class="p-1.5 hover:bg-slate-100 rounded-lg transition" aria-label="Next month">
+                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 mb-2 text-xs">
+              <div class="text-center text-slate-500 font-medium p-1">อา</div>
+              <div class="text-center text-slate-500 font-medium p-1">จ</div>
+              <div class="text-center text-slate-500 font-medium p-1">อ</div>
+              <div class="text-center text-slate-500 font-medium p-1">พ</div>
+              <div class="text-center text-slate-500 font-medium p-1">พฤ</div>
+              <div class="text-center text-slate-500 font-medium p-1">ศ</div>
+              <div class="text-center text-slate-500 font-medium p-1">ส</div>
+            </div>
+            <div id="recurrence-picker-grid" class="grid grid-cols-7 gap-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาเริ่มต้น <span class="text-red-500">*</span></label>
+          <select id="booking-start" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm"></select>
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาสิ้นสุด <span class="text-red-500">*</span></label>
+          <select id="booking-end" required class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm"></select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ผู้เข้าร่วมการประชุม</label>
+        <button type="button" onclick="openAttendeeModal()" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-center gap-2 text-slate-700 font-medium">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>เลือกผู้เข้าร่วมการประชุม</span>
+        </button>
+
+        <div class="mt-3">
+          <div class="text-[11px] sm:text-xs text-slate-500 mb-1">รายชื่อที่เลือก:</div>
+          <div id="attendees-display" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <div>
+        <label for="booking-description" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รายละเอียด</label>
+        <textarea id="booking-description" rows="3" class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none resize-none text-sm" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+      </div>
+
+      <div id="conflict-warning" class="hidden p-3 bg-red-50 border border-red-200 rounded-xl">
+        <div class="flex items-center gap-2 text-red-700 text-sm">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span class="font-medium">ห้องประชุมนี้ถูกจองในช่วงเวลาดังกล่าวแล้ว</span>
+        </div>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="px-4 sm:px-6 py-4 border-t border-slate-200 bg-white flex gap-3">
+      <button type="button" onclick="closeBookingModal()" class="flex-1 px-4 py-3 border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition">ยกเลิก</button>
+      <button type="submit" form="booking-form" id="submit-btn" class="flex-1 px-4 py-3 bg-emerald-200 text-emerald-900 rounded-xl font-medium hover:bg-emerald-300 transition">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Attendees Modal -->
+<div id="attendee-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden slide-in flex flex-col max-h-[90vh]">
+    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
+      <div class="min-w-0">
+        <h3 class="text-lg font-semibold text-slate-800 truncate">ผู้เข้าร่วมการประชุม</h3>
+        <p class="text-xs text-slate-500 mt-0.5">เลือกแผนก แล้วเลือกพนักงาน</p>
+      </div>
+      <button type="button" onclick="closeAttendeeModal()" class="p-2 hover:bg-slate-100 rounded-lg transition flex-shrink-0" aria-label="Close">
+        <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
       <div>
         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก</label>
-        <select id="attendee-dept-filter" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+        <select id="attendee-dept-filter" class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
           <option value="">-- เลือกแผนก --</option>
         </select>
       </div>
+
       <div>
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ชื่อพนักงาน</label>
-        <select id="attendee-employee-select" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" disabled>
-          <option value="">-- เลือกแผนกก่อน --</option>
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รายชื่อพนักงาน</label>
+        <select id="attendee-employee-select" class="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+          <option value="">-- เลือกผู้เข้าร่วม --</option>
         </select>
-        <div class="mt-1 text-[11px] sm:text-xs text-slate-500">
-          อีเมล: <span id="attendee-email-preview" class="text-slate-700 font-medium">-</span>
+        <div class="mt-2 text-xs text-slate-600">
+          อีเมล: <span id="attendee-email-preview" class="font-medium text-slate-800">-</span>
         </div>
       </div>
-      <div class="flex gap-2">
-        <button type="button" onclick="addAttendeeFromModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base">+ เพิ่ม</button>
-        <button type="button" onclick="closeAttendeeModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition text-xs sm:text-base">เสร็จสิ้น</button>
+
+      <button type="button" onclick="addAttendeeFromModal()" class="w-full px-4 py-3 bg-blue-200 text-blue-900 rounded-xl font-medium hover:bg-blue-300 transition">+ เพิ่มผู้เข้าร่วม</button>
+
+      <div>
+        <div class="text-xs text-slate-600 mb-2">รายชื่อที่เลือก</div>
+        <div id="attendees-display-modal" class="flex flex-wrap gap-2"></div>
       </div>
+    </div>
+
+    <div class="px-4 sm:px-6 py-4 border-t border-slate-200 bg-white">
+      <button type="button" onclick="closeAttendeeModal()" class="w-full px-4 py-3 bg-emerald-200 text-emerald-900 rounded-xl font-medium hover:bg-emerald-300 transition">เสร็จสิ้น</button>
     </div>
   </div>
 </div>
 
+<!-- View Booking Modal -->
+<div class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4" id="view-modal">
+<div class="bg-white rounded-2xl w-full max-w-md slide-in">
+<div class="p-3 sm:p-6 rounded-t-2xl" id="view-modal-header">
+<div class="flex items-center justify-between">
+<h3 class="text-base sm:text-xl font-semibold text-white truncate" id="view-title"></h3><button class="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition flex-shrink-0" onclick="closeViewModal()">
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg></button>
+</div>
+</div>
+<div class="p-3 sm:p-6 space-y-3 sm:space-y-4">
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="text-slate-700" id="view-room"></span>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="text-slate-700" id="view-date"></span>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="text-slate-700" id="view-time"></span>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base" id="view-organizer-container">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<div class="text-slate-500">
+        ผู้จองห้อง
+       </div><span class="text-slate-700 font-medium" id="view-organizer"></span>
+</div>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base" id="view-dept-container">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<div class="text-slate-500">
+        แผนก
+       </div><span class="text-slate-700 font-medium" id="view-dept"></span>
+</div>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-base" id="view-recurrence-container">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="text-slate-700" id="view-recurrence"></span>
+</div>
+<div class="flex items-start gap-2 sm:gap-3 text-xs sm:text-base" id="view-attendees-container">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="text-slate-700" id="view-attendees"></div>
+</div>
+<div class="flex items-start gap-2 sm:gap-3 text-xs sm:text-base" id="view-description-container">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="text-slate-700" id="view-description"></span>
+</div>
+<div class="flex gap-2 sm:gap-3 pt-2 sm:pt-4"><button class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2 text-xs sm:text-base" onclick="editBooking()">
+<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="hidden sm:inline">แก้ไข</span> </button> <button class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2 text-xs sm:text-base" id="delete-btn" onclick="showDeleteConfirm()">
+<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg><span class="hidden sm:inline">ลบ</span> </button>
+</div>
+<div class="hidden pt-2" id="delete-confirm">
+<div class="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+<p class="text-xs sm:text-sm text-red-700 mb-2 sm:mb-3">คุณต้องการลบการจองนี้หรือไม่?</p>
+<div class="space-y-1 sm:space-y-2" id="delete-options"><button class="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-red-200 text-red-700 rounded-lg hover:bg-red-50 transition" onclick="deleteBooking('single')">ลบเฉพาะรายการนี้</button> <button class="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition" id="delete-all-btn" onclick="deleteBooking('all')">ลบทั้งหมด</button>
+</div><button class="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition" onclick="hideDeleteConfirm()">ยกเลิก</button>
+</div>
+</div>
+</div>
+</div>
+</div><!-- Attendees Modal -->
+<div class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4" id="attendee-modal">
+<div class="bg-white rounded-2xl w-full max-w-md slide-in overflow-hidden">
+<div class="p-3 sm:p-5 border-b border-slate-200 flex items-center justify-between">
+<h3 class="text-base sm:text-lg font-semibold text-slate-800">เลือกผู้เข้าร่วมการประชุม</h3>
+<button class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition" onclick="closeAttendeeModal()" type="button">
+<svg class="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<div class="p-3 sm:p-5 space-y-3">
+<div>
+<label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก</label>
+<select class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" id="attendee-dept-filter">
+<option value="">-- เลือกแผนก --</option>
+</select>
+</div>
+<div>
+<label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ชื่อพนักงาน</label>
+<select class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" disabled="" id="attendee-employee-select">
+<option value="">-- เลือกแผนกก่อน --</option>
+</select>
+<div class="mt-1 text-[11px] sm:text-xs text-slate-500">
+          อีเมล: <span class="text-slate-700 font-medium" id="attendee-email-preview">-</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base" onclick="addAttendeeFromModal()" type="button">+ เพิ่ม</button>
+<button class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition text-xs sm:text-base" onclick="closeAttendeeModal()" type="button">เสร็จสิ้น</button>
+</div>
+</div>
+</div>
+</div>
 <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs sm:text-sm max-w-xs"><span id="toast-message"></span>
-  </div>
-  <script>
+<div class="fixed bottom-4 right-4 bg-slate-800 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs sm:text-sm max-w-xs" id="toast"><span id="toast-message"></span>
+</div>
+<script>
+
     // =========================
     // Google Apps Script Backend
     // =========================
@@ -583,65 +722,6 @@
       });
     }
 
-      function buildPeopleOptions(filterDept, keepOrganizerName = '') {
-        const list = (filterDept ? employees.filter(e => e.department === filterDept) : employees).slice()
-          .sort((a,b) => sortTh(a.name, b.name));
-
-        organizerSelect.innerHTML =
-          '<option value="">-- เลือกชื่อ --</option>' +
-          list.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
-
-        attendeeSelect.innerHTML =
-          '<option value="">-- เลือกผู้เข้าร่วม --</option>' +
-          list.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
-
-        // restore organizer if requested
-        if (keepOrganizerName) organizerSelect.value = keepOrganizerName;
-      }
-
-      // initial build
-      buildDeptOptions();
-      buildPeopleOptions('', '');
-
-      // dept -> filter people (organizer + attendees)
-      deptSelect.addEventListener('change', () => {
-        const dept = deptSelect.value || '';
-        organizerEmailInput.value = '';
-        organizerSelect.value = '';
-        attendeeSelect.value = '';
-        if (attendeeEmailPreview) attendeeEmailPreview.textContent = '-';
-
-        // clear selected attendees because filter has changed
-        attendeesList = [];
-        updateAttendeesDisplay();
-
-        buildPeopleOptions(dept, '');
-      });
-
-      // organizer -> auto fill dept + email + also filter attendee list to that dept
-      organizerSelect.addEventListener('change', () => {
-        const name = organizerSelect.value;
-        const emp = employees.find(x => x.name === name);
-
-        organizerEmailInput.value = emp?.email || '';
-
-        if (emp?.department) {
-          deptSelect.value = emp.department;
-          // rebuild people list under selected dept, keep organizer selected
-          buildPeopleOptions(emp.department, name);
-        }
-      });
-
-      // attendee select -> show email preview
-      attendeeSelect.addEventListener('change', () => {
-        const name = attendeeSelect.value;
-        const emp = employees.find(x => x.name === name);
-        if (attendeeEmailPreview) attendeeEmailPreview.textContent = emp?.email || '-';
-      });
-    }
-
-
-        
     async function bootstrapFromBackend() {
       try {
         // Employees
@@ -766,21 +846,8 @@ async function init() {
       document.getElementById('attendee-email-preview').textContent = '-';
     }
 
-      const emp = employees.find(x => x.name === name);
-      const email = emp?.email || '';
 
-      if (attendeesList.some(a => a.name === name)) {
-        showToast('ผู้นี้ได้ถูกเพิ่มเข้ารายชื่อแล้ว');
-        return;
-      }
-
-      attendeesList.push({ name, email });
-      updateAttendeesDisplay();
-      select.value = '';
-      document.getElementById('attendee-email-preview').textContent = '-';
-    }
-
-    function removeAttendee(index) {
+function removeAttendee(index) {
       attendeesList.splice(index, 1);
       updateAttendeesDisplay();
     }
@@ -1459,5 +1526,7 @@ function showToast(message) {
     }
 
     init();
-  </script>
+  
+</script>
+</body>
 </html>
