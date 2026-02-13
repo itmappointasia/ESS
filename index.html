@@ -154,19 +154,25 @@
      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">หัวเรื่องการประชุม *</label> <input type="text" id="booking-title" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" placeholder="เช่น ประชุมทีม Marketing">
      </div>
      <div class="grid grid-cols-2 gap-2 sm:gap-4">
-      <div>
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ผู้จองห้อง *</label>
-        <select id="booking-organizer" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
-          <option value="">-- เลือกชื่อ --</option>
-        </select>
-        <div class="mt-2">
-          <label class="block text-[11px] sm:text-xs font-medium text-slate-600 mb-1">อีเมลผู้จอง</label>
-          <input type="text" id="booking-organizer-email" readonly class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 outline-none text-xs sm:text-sm" placeholder="เลือกชื่อเพื่อแสดงอีเมล">
-        </div>
-      </div>
-      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก *</label> <select id="booking-department" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm"> <option value="">-- เลือกแผนก --</option> </select>
-      </div>
-     </div>
+  <div>
+    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก *</label>
+    <select id="booking-department" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+      <option value="">-- เลือกแผนก --</option>
+    </select>
+    <p class="mt-1 text-[11px] sm:text-xs text-slate-500">* ต้องเลือกแผนกก่อน จึงจะเลือกผู้จองได้</p>
+  </div>
+  <div>
+    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ผู้จองห้อง *</label>
+    <select id="booking-organizer" required disabled class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm disabled:bg-slate-100 disabled:text-slate-500">
+      <option value="">-- เลือกชื่อ --</option>
+    </select>
+    <div class="mt-2">
+      <label class="block text-[11px] sm:text-xs font-medium text-slate-600 mb-1">อีเมลผู้จอง</label>
+      <input type="text" id="booking-organizer-email" readonly class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 outline-none text-xs sm:text-sm" placeholder="เลือกชื่อเพื่อแสดงอีเมล">
+    </div>
+  </div>
+</div>
+</div>
      <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ห้องประชุม *</label>
       <div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"> <input type="radio" name="room" value="Mind Room" class="peer hidden" required>
         <div class="p-2 sm:p-3 border-2 border-slate-200 rounded-lg peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition text-xs sm:text-sm">
@@ -230,26 +236,31 @@
       <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">การจองซ้ำ</label> <select id="recurrence-type" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> <option value="none">ไม่ซ้ำ</option> <option value="daily">ทุกวัน</option> <option value="weekly">ทุกสัปดาห์</option> <option value="biweekly">ทุก 2 สัปดาห์</option> <option value="monthly">ทุกเดือน</option> </select>
       </div>
      </div>
-     <div id="recurrence-end-container" class="hidden"><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">สิ้นสุดการจองซ้ำ</label>
-      <div class="relative"><input type="text" id="recurrence-end-display" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none cursor-pointer bg-white text-xs sm:text-sm" onclick="toggleRecurrencePicker()" readonly placeholder="เลือกวันที่"> <input type="hidden" id="recurrence-end">
-      </div>
-     </div>
-     <div class="grid grid-cols-2 gap-2 sm:gap-4">
+     <div id="recurrence-end-container" class="hidden">
+  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">สิ้นสุดการจองซ้ำ *</label>
+  <input type="date" id="recurrence-end" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm bg-white">
+  <p class="mt-1 text-[11px] sm:text-xs text-slate-500">ระบุวันที่สิ้นสุดเพื่อสร้างรายการจองซ้ำอัตโนมัติ</p>
+</div>
+
+<div class="grid grid-cols-2 gap-2 sm:gap-4">
+
       <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาเริ่มต้น *</label> <select id="booking-start" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> </select>
       </div>
       <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">เวลาสิ้นสุด *</label> <select id="booking-end" required class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> </select>
       </div>
      </div>
-     <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ผู้เข้าร่วมการประชุม</label>
-      <div class="flex gap-2 mb-2"><select id="attendee-select" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs sm:text-sm"> <option value="">-- เลือกผู้เข้าร่วม --</option> </select> <button type="button" onclick="addAttendee()" class="px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base">+ เพิ่ม</button>
-      </div>
-      <div class="mt-1 mb-1">
-        <span class="text-[11px] sm:text-xs text-slate-500">อีเมลที่เลือก:</span>
-        <span id="attendee-email-preview" class="text-[11px] sm:text-xs text-slate-700 font-medium ml-1">-</span>
-      </div>
-      <div id="attendees-display" class="flex flex-wrap gap-0"></div>
-     </div>
-     <div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รายละเอียด</label> <textarea id="booking-description" rows="3" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none resize-none text-xs sm:text-sm" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+     <div>
+  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">ผู้เข้าร่วมการประชุม</label>
+  <button type="button" onclick="openAttendeeModal()" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base flex items-center justify-center gap-2">
+    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    ผู้เข้าร่วมการประชุม
+  </button>
+  <div class="mt-2">
+    <div class="text-[11px] sm:text-xs text-slate-500 mb-1">รายชื่อที่เลือก:</div>
+    <div id="attendees-display" class="flex flex-wrap gap-0"></div>
+  </div>
+</div>
+<div><label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รายละเอียด</label> <textarea id="booking-description" rows="3" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none resize-none text-xs sm:text-sm" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
      </div>
      <div id="conflict-warning" class="hidden p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
       <div class="flex items-center gap-2 text-red-700 text-xs sm:text-sm">
@@ -330,7 +341,40 @@
      </div>
     </div>
    </div>
-  </div><!-- Toast -->
+  </div><!-- Attendees Modal -->
+<div id="attendee-modal" class="fixed inset-0 bg-black/50 modal-overlay hidden items-center justify-center z-50 p-2 sm:p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md slide-in overflow-hidden">
+    <div class="p-3 sm:p-5 border-b border-slate-200 flex items-center justify-between">
+      <h3 class="text-base sm:text-lg font-semibold text-slate-800">เลือกผู้เข้าร่วมการประชุม</h3>
+      <button type="button" onclick="closeAttendeeModal()" class="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="p-3 sm:p-5 space-y-3">
+      <div>
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แผนก</label>
+        <select id="attendee-dept-filter" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
+          <option value="">-- เลือกแผนก --</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">ชื่อพนักงาน</label>
+        <select id="attendee-employee-select" class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-sm" disabled>
+          <option value="">-- เลือกแผนกก่อน --</option>
+        </select>
+        <div class="mt-1 text-[11px] sm:text-xs text-slate-500">
+          อีเมล: <span id="attendee-email-preview" class="text-slate-700 font-medium">-</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" onclick="addAttendeeFromModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-200 text-blue-900 rounded-lg font-medium hover:bg-blue-300 transition text-xs sm:text-base">+ เพิ่ม</button>
+        <button type="button" onclick="closeAttendeeModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition text-xs sm:text-base">เสร็จสิ้น</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
   <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs sm:text-sm max-w-xs"><span id="toast-message"></span>
   </div>
   <script>
@@ -423,12 +467,17 @@
     };
 
     const timeOptions = [];
-    for (let h = 7; h <= 20; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        timeOptions.push(time);
+    // 07:30 -> 18:30 (step 30 นาที)
+    (function buildTimes(){
+      const startMin = 7*60 + 30;
+      const endMin   = 18*60 + 30;
+      for (let t = startMin; t <= endMin; t += 30) {
+        const h = Math.floor(t/60);
+        const m = t%60;
+        timeOptions.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
       }
-    }
+    })();
+
 
     const recurrenceLabels = {
       'none': 'ไม่ซ้ำ',
@@ -453,21 +502,86 @@
     }
 
     function initOrganizerSelect() {
-      const organizerSelect = document.getElementById('booking-organizer');
       const deptSelect = document.getElementById('booking-department');
-      const attendeeSelect = document.getElementById('attendee-select');
+      const organizerSelect = document.getElementById('booking-organizer');
       const organizerEmailInput = document.getElementById('booking-organizer-email');
-      const attendeeEmailPreview = document.getElementById('attendee-email-preview');
 
-      // --- helpers ---
-      const sortTh = (a, b) => String(a).localeCompare(String(b), 'th');
+      const attendeeDeptSelect = document.getElementById('attendee-dept-filter');
+      const attendeeEmpSelect = document.getElementById('attendee-employee-select');
 
-      function buildDeptOptions() {
-        departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean))).sort(sortTh);
-        deptSelect.innerHTML =
-          '<option value="">-- เลือกแผนก --</option>' +
-          departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
-      }
+      // Unique departments
+      departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean)))
+        .sort((a,b)=>a.localeCompare(b,'th'));
+
+      // Populate department selects
+      deptSelect.innerHTML =
+        '<option value="">-- เลือกแผนก --</option>' +
+        departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+
+      attendeeDeptSelect.innerHTML =
+        '<option value="">-- เลือกแผนก --</option>' +
+        departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+
+      // Disable organizer until department selected
+      organizerSelect.disabled = true;
+      organizerSelect.innerHTML = '<option value="">-- เลือกแผนกก่อน --</option>';
+      organizerEmailInput.value = '';
+
+      // When department changes -> filter organizer names
+      deptSelect.addEventListener('change', () => {
+        const dept = deptSelect.value;
+        organizerSelect.value = '';
+        organizerEmailInput.value = '';
+
+        if (!dept) {
+          organizerSelect.disabled = true;
+          organizerSelect.innerHTML = '<option value="">-- เลือกแผนกก่อน --</option>';
+          return;
+        }
+
+        const emps = employees.filter(e => (e.department || '') === dept)
+          .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+
+        organizerSelect.disabled = false;
+        organizerSelect.innerHTML =
+          '<option value="">-- เลือกชื่อ --</option>' +
+          emps.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+      });
+
+      // organizer -> auto fill email
+      organizerSelect.addEventListener('change', () => {
+        const name = organizerSelect.value;
+        const emp = employees.find(x => x.name === name);
+        organizerEmailInput.value = emp?.email || '';
+      });
+
+      // Attendee modal: dept -> filter employees
+      attendeeDeptSelect.addEventListener('change', () => {
+        const dept = attendeeDeptSelect.value;
+        attendeeEmpSelect.value = '';
+        document.getElementById('attendee-email-preview').textContent = '-';
+
+        if (!dept) {
+          attendeeEmpSelect.disabled = true;
+          attendeeEmpSelect.innerHTML = '<option value="">-- เลือกแผนกก่อน --</option>';
+          return;
+        }
+
+        const emps = employees.filter(e => (e.department || '') === dept)
+          .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+
+        attendeeEmpSelect.disabled = false;
+        attendeeEmpSelect.innerHTML =
+          '<option value="">-- เลือกผู้เข้าร่วม --</option>' +
+          emps.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+      });
+
+      attendeeEmpSelect.addEventListener('change', () => {
+        const name = attendeeEmpSelect.value;
+        const emp = employees.find(x => x.name === name);
+        document.getElementById('attendee-email-preview').textContent = emp?.email || '-';
+      });
+    }
 
       function buildPeopleOptions(filterDept, keepOrganizerName = '') {
         const list = (filterDept ? employees.filter(e => e.department === filterDept) : employees).slice()
@@ -615,14 +729,42 @@ async function init() {
 
 
 
-    function addAttendee() {
-      const select = document.getElementById('attendee-select');
+    function openAttendeeModal() {
+      const modal = document.getElementById('attendee-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAttendeeModal() {
+      const modal = document.getElementById('attendee-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function addAttendeeFromModal() {
+      const select = document.getElementById('attendee-employee-select');
       const name = select.value;
 
       if (!name) {
         showToast('กรุณาเลือกผู้เข้าร่วม');
         return;
       }
+
+      const emp = employees.find(x => x.name === name);
+      const email = emp?.email || '';
+
+      if (attendeesList.some(a => a.name === name)) {
+        showToast('ผู้นี้ได้ถูกเพิ่มเข้ารายชื่อแล้ว');
+        return;
+      }
+
+      attendeesList.push({ name, email });
+      updateAttendeesDisplay();
+
+      // reset selection
+      select.value = '';
+      document.getElementById('attendee-email-preview').textContent = '-';
+    }
 
       const emp = employees.find(x => x.name === name);
       const email = emp?.email || '';
@@ -967,6 +1109,7 @@ async function init() {
       document.getElementById('recurrence-group-id').value = '';
       document.getElementById('conflict-warning').classList.add('hidden');
       document.getElementById('recurrence-end-container').classList.add('hidden');
+      const re = document.getElementById('recurrence-end'); if (re) { re.value=''; re.required=false; }
       document.getElementById('date-picker').classList.add('hidden');
       attendeesList = [];
       updateAttendeesDisplay();
@@ -1257,6 +1400,7 @@ function viewBooking(id) {
 
       document.getElementById('recurrence-type').value = 'none';
       document.getElementById('recurrence-end-container').classList.add('hidden');
+      const re = document.getElementById('recurrence-end'); if (re) { re.value=''; re.required=false; }
 
       document.getElementById('booking-modal').classList.remove('hidden');
       document.getElementById('booking-modal').classList.add('flex');
