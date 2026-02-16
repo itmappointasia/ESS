@@ -1,96 +1,192 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="h-full">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Employee Self Service</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Portal</title>
+
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    *{ font-family:'Kanit',sans-serif; }
+    * { font-family: 'Prompt', sans-serif; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .icon-float { animation: float 3s ease-in-out infinite; }
+
+    .animate-in { animation: slide-up 0.6s ease-out forwards; }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
   </style>
+
+  <style>body { box-sizing: border-box; }</style>
 </head>
 
-<body class="min-h-screen bg-slate-50">
-  <main class="max-w-4xl mx-auto p-4 sm:p-8">
-    <header class="mb-6 sm:mb-10">
-      <h1 class="text-xl sm:text-3xl font-semibold text-slate-800">Employee Self Service</h1>
-      <p class="text-slate-500 mt-1 text-sm sm:text-base">เลือกเมนูเพื่อใช้งาน</p>
-    </header>
+<body class="h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%);">
 
-    <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- 1) Meeting Room -->
-      <a href="./book-room.html"
-         class="group bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-lg font-semibold text-slate-800">ระบบจองห้องประชุม</div>
-            <div class="text-sm text-slate-500 mt-1">Booking / Calendar</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-            ✓
-          </div>
-        </div>
-        <div class="mt-4 text-sm text-slate-600 group-hover:text-slate-800 transition">
-          เปิดเพื่อจองและดูตารางห้องประชุม
-        </div>
-      </a>
+    <!-- Decorative Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/3 rounded-full blur-3xl"></div>
+    </div>
 
-      <!-- 2) Company Announcements -->
-      <a href="./notify.html"
-         class="group bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-lg font-semibold text-slate-800">ประกาศบริษัท</div>
-            <div class="text-sm text-slate-500 mt-1">Announcements</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-            i
-          </div>
-        </div>
-        <div class="mt-4 text-sm text-slate-600 group-hover:text-slate-800 transition">
-          ดูประกาศ/เอกสาร/ข่าวสารภายใน
-        </div>
-      </a>
+    <div class="relative z-10 min-h-full flex flex-col items-center justify-center px-4 py-12">
 
-      <!-- 3) e-Leave -->
-      <a href="./e-leave.html"
-         class="group bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-lg font-semibold text-slate-800">ระบบ e-Leave</div>
-            <div class="text-sm text-slate-500 mt-1">Leave Request</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-            🗓
-          </div>
+      <!-- Header -->
+      <header class="text-center mb-12 animate-in" style="opacity: 0;">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 mb-6 shadow-lg shadow-blue-500/30">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
         </div>
-        <div class="mt-4 text-sm text-slate-600 group-hover:text-slate-800 transition">
-          ส่งคำขอลา/ตรวจสถานะ/ประวัติการลา
-        </div>
-      </a>
+        <h1 id="portal-title" class="text-4xl md:text-5xl font-bold text-slate-900 mb-3 tracking-tight">Company Portal</h1>
+        <p id="welcome-text" class="text-lg text-slate-600 font-light">ยินดีต้อนรับสู่ระบบบริการภายในองค์กร</p>
+      </header>
 
-      <!-- 4) IT Issue -->
-      <a href="./it-issue.html"
-         class="group bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-lg font-semibold text-slate-800">แจ้งปัญหาไอที</div>
-            <div class="text-sm text-slate-500 mt-1">IT Ticket</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-red-100 text-red-700 flex items-center justify-center">
-            !
-          </div>
-        </div>
-        <div class="mt-4 text-sm text-slate-600 group-hover:text-slate-800 transition">
-          เปิดทิกเก็ต/ติดตามสถานะ/แนบรูป
-        </div>
-      </a>
-    </section>
+      <!-- Menu Grid -->
+      <main class="w-full max-w-4xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <footer class="mt-8 text-xs text-slate-400">
-      © ESS
-    </footer>
-  </main>
+          <!-- Meeting Room Booking -->
+          <a href="./book-room.html" class="card-hover animate-in delay-1" style="opacity: 0;">
+            <div class="group relative bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 hover:border-blue-400 hover:bg-white shadow-sm hover:shadow-lg hover:shadow-blue-200/30 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="icon-float inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 mb-5 shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-shadow duration-300">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">ระบบจองห้องประชุม</h2>
+                <p class="text-slate-600 text-sm font-light">Meeting Room Booking</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- Company Announcements -->
+          <a href="./notify.html" class="card-hover animate-in delay-2" style="opacity: 0;">
+            <div class="group relative bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 hover:border-amber-400 hover:bg-white shadow-sm hover:shadow-lg hover:shadow-amber-200/30 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="icon-float inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 mb-5 shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-shadow duration-300" style="animation-delay: 0.5s;">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors">ประกาศบริษัท</h2>
+                <p class="text-slate-600 text-sm font-light">Company Announcements</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- e-Leave System (external) -->
+          <a href="http://203.150.147.17/Login/Login.aspx" target="_blank" rel="noopener noreferrer" class="card-hover animate-in delay-3" style="opacity: 0;">
+            <div class="group relative bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 hover:border-emerald-400 hover:bg-white shadow-sm hover:shadow-lg hover:shadow-emerald-200/30 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="icon-float inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 mb-5 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow duration-300" style="animation-delay: 1s;">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">ระบบ e-Leave</h2>
+                <p class="text-slate-600 text-sm font-light">Leave Management System</p>
+                <span class="inline-flex items-center mt-3 text-xs text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  เปิดในแท็บใหม่
+                </span>
+              </div>
+            </div>
+          </a>
+
+          <!-- IT Support -->
+          <a href="./it-issue.html" class="card-hover animate-in delay-4" style="opacity: 0;">
+            <div class="group relative bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 hover:border-purple-400 hover:bg-white shadow-sm hover:shadow-lg hover:shadow-purple-200/30 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="icon-float inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 mb-5 shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/40 transition-shadow duration-300" style="animation-delay: 1.5s;">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">แจ้งปัญหาไอที</h2>
+                <p class="text-slate-600 text-sm font-light">IT Helpdesk</p>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <script>
+    const defaultConfig = {
+      portal_title: 'Company Portal',
+      welcome_text: 'ยินดีต้อนรับสู่ระบบบริการภายในองค์กร',
+      background_color: '#ffffff',
+      surface_color: '#f8fafc',
+      text_color: '#0f172a',
+      primary_action_color: '#3b82f6',
+      secondary_action_color: '#64748b'
+    };
+
+    // Local config (no SDK). You can change these values directly.
+    (function applyLocalConfig(){
+      const config = defaultConfig;
+
+      const portalTitle = document.getElementById('portal-title');
+      const welcomeText = document.getElementById('welcome-text');
+      const wrapper = document.getElementById('app-wrapper');
+
+      if (portalTitle) {
+        portalTitle.textContent = config.portal_title;
+        portalTitle.style.color = config.text_color;
+      }
+
+      if (welcomeText) {
+        welcomeText.textContent = config.welcome_text;
+        welcomeText.style.color = config.secondary_action_color;
+      }
+
+      if (wrapper) {
+        wrapper.style.background = `linear-gradient(135deg, ${config.background_color} 0%, ${config.surface_color} 50%, ${config.background_color} 100%)`;
+      }
+    })();
+  </script>
 </body>
 </html>
