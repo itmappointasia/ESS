@@ -1615,6 +1615,44 @@ function showToast(message) {
     }
 
     init();
+
+// -----------------------------
+// 🔄 Auto Refresh Calendar (ทุก 5 วินาที)
+// -----------------------------
+let __autoRefreshTimer = null;
+
+function startAutoRefresh() {
+  if (__autoRefreshTimer) return;
+
+  __autoRefreshTimer = setInterval(() => {
+    try {
+      console.log("🔄 Auto refreshing bookings...");
+      
+      // เรียกฟังก์ชันโหลด booking ของคุณ
+      if (typeof loadBookings === "function") {
+        loadBookings();
+      } else if (typeof refreshCalendar === "function") {
+        refreshCalendar();
+      }
+
+    } catch (err) {
+      console.warn("Auto refresh error:", err);
+    }
+  }, 5000); // 5000 ms = 5 วินาที
+}
+
+function stopAutoRefresh() {
+  if (__autoRefreshTimer) {
+    clearInterval(__autoRefreshTimer);
+    __autoRefreshTimer = null;
+  }
+}
+
+// เริ่มทำงานตอนหน้าโหลดเสร็จ
+document.addEventListener("DOMContentLoaded", () => {
+  startAutoRefresh();
+});
+
   
 </script>
 </body>
