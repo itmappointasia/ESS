@@ -72,6 +72,10 @@
 
     .cal-cell { min-height: 80px; }
 
+    :root{--hour-h:50px;}
+@media (min-width: 640px){:root{--hour-h:60px;}}
+
+
     /* Month view: make day cells grow to fill available height */
     #calendar-container{ min-height:0; }
     .month-shell{ height:100%; display:flex; flex-direction:column; }
@@ -1199,57 +1203,104 @@ function removeAttendee(index) {
     }
 
     function renderDayView() {
-      const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
-      const rooms = ['Mind Room', 'Reality Room', 'Power Room', 'Space Room'];
-      const filteredRooms = currentRoomFilter === 'all' ? rooms : [currentRoomFilter];
+  const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
+  const roomsAll = ['Mind Room', 'Reality Room', 'Power Room', 'Space Room'];
+  const rooms = currentRoomFilter === 'all' ? roomsAll : [currentRoomFilter];
 
-      let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">`;
-      
-      html += `<div class="grid border-b border-slate-200 bg-slate-50 flex-shrink-0" style="grid-template-columns: 50px repeat(${filteredRooms.length}, 1fr);">`;
-      html += `<div class="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
-      
-      filteredRooms.forEach(room => {
-        html += `
-          <div class="p-1.5 sm:p-3 text-center border-r border-slate-200 text-xs">
-            <div class="flex items-center justify-center gap-1 mb-1">
-              <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${roomColors[room].class}"></span>
-            </div>
-            <span class="font-medium text-slate-700 hidden sm:inline">${room}</span>
-            <span class="font-medium text-slate-700 sm:hidden">${room.split(' ')[0]}</span>
-          </div>
-        `;
-      });
-      html += `</div>`;
+  const GRID_START_H = 7;
+  const GRID_END_H = 20; // inclusive labels
+  const hours = [];
+  for (let h = GRID_START_H; h <= GRID_END_H; h++) hours.push(h);
 
-      html += `<div class="overflow-y-auto flex-1">`;
-      for (let h = 7; h <= 20; h++) {
-        html += `<div class="grid border-b border-slate-100" style="grid-template-columns: 50px repeat(${filteredRooms.length}, 1fr);">`;
-        html += `<div class="p-1.5 sm:p-2 text-xs text-slate-500 text-center border-r border-slate-100 bg-slate-50 flex-shrink-0">${h.toString().padStart(2, '0')}:00</div>`;
-        
-        filteredRooms.forEach(room => {
-          const hourBookings = bookings.filter(b => {
-            if (b.date !== dateStr || b.room !== room) return false;
-            const startHour = parseInt(b.start_time.split(':')[0]);
-            return startHour === h;
-          });
+  // Collect bookings for the day + selected rooms
+  const dayBookings = getFilteredBookings().filter(b => b.date === dateStr && rooms.includes(b.room));
 
-          html += `
-            <div class="p-0.5 sm:p-1 min-h-[50px] sm:min-h-[60px] border-r border-slate-100" onclick="openBookingModal('${dateStr}', '${h.toString().padStart(2, '0')}:00', '${room}')">
-              ${hourBookings.map(b => `
-                <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')" class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs mb-0.5 cursor-pointer">
-                  <div class="font-medium truncate">${b.title}</div>
-                  <div class="text-slate-500 text-xs">${b.start_time}</div>
-                </div>
-              `).join('')}
-            </div>
-          `;
-        });
-        html += `</div>`;
-      }
-      html += `</div></div>`;
+  // Helper: minutes since midnight
+  const toMin = (hhmm) => {
+    if (!hhmm || typeof hhmm !== 'string') return null;
+    const parts = hhmm.split(':');
+    if (parts.length < 2) return null;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return h * 60 + m;
+  };
 
-      return html;
-    }
+  const gridStartMin = GRID_START_H * 60;
+  const gridEndMin = (GRID_END_H + 1) * 60; // bottom boundary
+
+  let html = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">`;
+
+  // Header
+  html += `<div class="grid border-b border-slate-200 bg-slate-50 flex-shrink-0" style="grid-template-columns: 50px repeat(${rooms.length}, 1fr);">`;
+  html += `<div class="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-slate-600 border-r border-slate-200">เวลา</div>`;
+  rooms.forEach(room => {
+    html += `
+      <div class="p-1.5 sm:p-3 text-center border-r border-slate-200 text-xs">
+        <div class="flex items-center justify-center gap-1 mb-1">
+          <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${roomColors[room].class}"></span>
+        </div>
+        <span class="font-medium text-slate-700 hidden sm:inline">${room}</span>
+        <span class="font-medium text-slate-700 sm:hidden">${room.split(' ')[0]}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // Body (single canvas per room column so bookings can span across hours)
+  html += `<div class="overflow-y-auto flex-1">`;
+  html += `<div class="grid" style="grid-template-columns: 50px repeat(${rooms.length}, 1fr);">`;
+
+  // Time labels column
+  html += `<div class="border-r border-slate-200 bg-slate-50">`;
+  hours.forEach(h => {
+    html += `<div class="p-1.5 sm:p-2 text-xs text-slate-500 text-center border-b border-slate-100" style="height: var(--hour-h);">${h.toString().padStart(2, '0')}:00</div>`;
+  });
+  html += `</div>`;
+
+  // Room columns
+  rooms.forEach(room => {
+    // column wrapper is relative so event cards can span multiple hours
+    html += `<div class="relative border-r border-slate-100" style="min-width:0;">`;
+
+    // Background hour slots (clickable)
+    hours.forEach(h => {
+      html += `<div class="border-b border-slate-100 hover:bg-slate-50 transition cursor-pointer" style="height: var(--hour-h);" onclick="openBookingModal('${dateStr}', '${h.toString().padStart(2, '0')}:00', '${room}')"></div>`;
+    });
+
+    // Booking layers
+    const roomBookings = dayBookings.filter(b => b.room === room);
+
+    html += roomBookings.map(b => {
+      const sMin = toMin(b.start_time);
+      const eMin = toMin(b.end_time);
+      if (sMin === null || eMin === null) return '';
+      // Clamp to grid bounds (so it doesn't go crazy outside view)
+      const clampedStart = Math.max(sMin, gridStartMin);
+      const clampedEnd = Math.min(eMin, gridEndMin);
+      const durMin = Math.max(15, clampedEnd - clampedStart); // minimum 15 min for visibility
+
+      const topMin = clampedStart - gridStartMin;
+      const topH = topMin / 60;
+      const durH = durMin / 60;
+
+      const endLabel = b.end_time ? ` - ${b.end_time}` : '';
+      return `
+        <div onclick="event.stopPropagation(); viewBooking('${b.__backendId}')"
+             class="booking-card ${roomColors[b.room]?.light || 'bg-slate-100'} px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs cursor-pointer absolute left-1 right-1 z-30 shadow-sm overflow-hidden"
+             style="top: calc(var(--hour-h) * ${topH}); height: calc(var(--hour-h) * ${durH});">
+          <div class="font-medium truncate">${b.title}</div>
+          <div class="text-slate-500 text-[10px] sm:text-xs">${b.start_time}${endLabel}</div>
+        </div>
+      `;
+    }).join('');
+
+    html += `</div>`;
+  });
+
+  html += `</div></div></div>`;
+  return html;
+}
 
     function openBookingModal(date = null, time = null, room = null) {
       isEditing = false;
