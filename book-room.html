@@ -676,27 +676,35 @@
     }
 
     async function bootstrapFromBackend() {
-      try {
-        // Employees
-        const empRes = await api('getEmployees');
-        employees.length = 0;
-        (empRes.data || []).forEach(e => employees.push(e));
+  try {
+    // Employees
+    const empRes = await api('getEmployees');
+    employees.length = 0;
+    (empRes.data || []).forEach(e => employees.push(e));
 
-        initOrganizerSelect();
+    // ✅ เพิ่มตามที่ขอ (1) log ผลจาก backend + จำนวนพนักงาน
+    console.log('EMP RES =', empRes);
+    console.log('employees count =', employees.length);
 
-        // Bookings
-        const bookRes = await api('getBookings');
-        bookings = (bookRes.data || []).map(b => ({
-          ...b,
-          __backendId: b.id || b.__backendId
-        }));
+    initOrganizerSelect();
 
-        renderCalendar();
-      } catch (err) {
-        console.error(err);
-        showToast('โหลดข้อมูลจากชีตไม่สำเร็จ: ' + (err.message || err));
-      }
-    }
+    // ✅ เพิ่มตามที่ขอ (2) toast แสดงจำนวนพนักงาน + จำนวนแผนก
+    // (departments จะถูกเซ็ตใน initOrganizerSelect())
+    showToast('พนักงาน: ' + employees.length + ' คน / แผนก: ' + departments.length + ' แผนก');
+
+    // Bookings
+    const bookRes = await api('getBookings');
+    bookings = (bookRes.data || []).map(b => ({
+      ...b,
+      __backendId: b.id || b.__backendId
+    }));
+
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    showToast('โหลดข้อมูลจากชีตไม่สำเร็จ: ' + (err.message || err));
+  }
+}
 
 async function refreshBookings() {
       const bookRes = await api('getBookings');
