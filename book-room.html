@@ -679,55 +679,35 @@
     }
 
     async function bootstrapFromBackend() {
-      try {
-        // Employees
-        const empRes = await api('getEmployees');
-        console.log('EMP RES =', empRes);
+  try {
+    // Employees
+    const empRes = await api('getEmployees');
 
-        employees.length = 0;
-        (empRes.data || []).forEach(e => employees.push(e));
-        console.log('employees count =', employees.length);
+    console.log('EMP RES =', empRes);
 
-        // init dropdowns (will also compute `departments`)
-        initOrganizerSelect();
+    employees.length = 0;
+    (empRes.data || []).forEach(e => employees.push(e));
 
-        // show quick status for debugging (users can screenshot console / toast)
-        try {
-          showToast('พนักงาน: ' + employees.length + ' คน / แผนก: ' + departments.length + ' แผนก');
-        } catch(_) {}
+    console.log('employees count =', employees.length);
 
-        // If employees list is empty, retry once (บางเครื่องโดนบล็อก/timeout/โหลดไม่ทัน)
-        if (employees.length === 0) {
-          console.warn('Employees list is empty. Retrying getEmployees once...');
-          await new Promise(r => setTimeout(r, 800));
-          const empRes2 = await api('getEmployees');
-          console.log('EMP RES (retry) =', empRes2);
+    initOrganizerSelect();
 
-          employees.length = 0;
-          (empRes2.data || []).forEach(e => employees.push(e));
-          console.log('employees count (retry) =', employees.length);
+    showToast('พนักงาน: ' + employees.length + ' คน / แผนก: ' + departments.length + ' แผนก');
 
-          initOrganizerSelect();
-          try {
-            showToast('พนักงาน: ' + employees.length + ' คน / แผนก: ' + departments.length + ' แผนก');
-          } catch(_) {}
-        }
+    // Bookings
+    const bookRes = await api('getBookings');
+    bookings = (bookRes.data || []).map(b => ({
+      ...b,
+      __backendId: b.id || b.__backendId
+    }));
 
-        // Bookings
-        const bookRes = await api('getBookings');
-        bookings = (bookRes.data || []).map(b => ({
-          ...b,
-          __backendId: b.id || b.__backendId
-        }));
+    renderCalendar();
 
-        renderCalendar();
-      } catch (err) {
-        console.error(err);
-        showToast('โหลดข้อมูลจากชีตไม่สำเร็จ: ' + (err.message || err));
-      }
-    }
-
-    }
+  } catch (err) {
+    console.error(err);
+    showToast('โหลดข้อมูลจากชีตไม่สำเร็จ: ' + (err.message || err));
+  }
+}
 
 async function refreshBookings() {
       const bookRes = await api('getBookings');
